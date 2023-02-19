@@ -1,0 +1,7 @@
+# clangd
+.cache/
+compile_commands.json
+
+# Build artifacts
+*/obj/
+*/hda/

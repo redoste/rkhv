@@ -1,0 +1,3 @@
+[submodule "vendor/gnu-efi"]
+	path = vendor/gnu-efi
+	url = https://git.code.sf.net/p/gnu-efi/code
