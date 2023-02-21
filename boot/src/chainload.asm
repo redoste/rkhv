@@ -7,6 +7,11 @@ chainload:
 	mov rdi, rcx
 	mov cr3, rdx
 
+	mov ecx, 0xc0000080 ; IA32_EFER
+	rdmsr
+	or eax, (1 << 11) ; IA32_EFER.NXE : Execute-disable bit enable
+	wrmsr
+
 	mov rsp, 0xfffffffffffffff8
 	mov rbp, rsp
 	mov rax, 0xffffff0000000000
