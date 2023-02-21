@@ -16,7 +16,7 @@ static void serial_init(void) {
 	outb(COM1_LINE_CONTROL_REG, COM_LINE_CONTROL_8BITS | COM_LINE_CONTROL_PARITY_NONE);
 	serial_initialized = true;
 	/* NOTE : We should probably check for the presence of COM1 using the loopback feature but we wouldn't have
-	 *        any stdio overwise so we'll just asume it exists for now
+	 *        any stdio otherwise so we'll just asume it exists for now
 	 */
 }
 
