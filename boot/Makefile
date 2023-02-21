@@ -20,7 +20,7 @@ SRCS_A:=src/chainload.asm
 
 OBJ_DIR:=obj
 OBJS_C:=$(addprefix $(OBJ_DIR)/,$(SRCS_C:%.c=%.o))
-OBJS_A:=$(addprefix $(OBJ_DIR)/,$(SRCS_A:%.asm=%.o))
+OBJS_A:=$(addprefix $(OBJ_DIR)/,$(SRCS_A:%.asm=%_asm.o))
 OBJS:=$(OBJS_C) $(OBJS_A)
 
 OUT_DIR:=hda/EFI/BOOT
@@ -37,7 +37,7 @@ $(OBJS_C): $(OBJ_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)
 	$(BOOT_CC) -MMD -MT $@ $(BOOT_CPPFLAGS) $(BOOT_CFLAGS) -c $< -o $@
 
-$(OBJS_A): $(OBJ_DIR)/%.o: %.asm
+$(OBJS_A): $(OBJ_DIR)/%_asm.o: %.asm
 	@mkdir -p $(dir $@)
 	$(BOOT_ASM) -MD $(@:%.o=%.d) -MT $@ $(BOOT_AFLAGS) $< -o $@
 
