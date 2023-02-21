@@ -1,19 +1,25 @@
 include ../common/Makefile
 
 HV_CC?=$(CC)
+HV_ASM?=$(ASM)
 HV_TARGET?=x86_64-elf
 
 HV_CPPFLAGS?=$(CPPFLAGS_COMMON) -DRKHV_HV
 HV_CFLAGS?=-target $(HV_TARGET) $(CFLAGS_FREESTANDING) -mcmodel=large $(CFLAGS_WARNS) $(CFLAGS_OPT)
 HV_LFLAGS?=-target $(HV_TARGET) $(LFLAGS_FREESTANDING) -fuse-ld=lld -T rkhv.ld $(LFLAGS_OPT)
+HV_AFLAGS?=-f elf64 $(AFLAGS_WARNS)
 
-SRCS:=src/main.c\
-      src/serial.c\
-      src/stdio.c\
-      src/string.c
+SRCS_C:=src/main.c\
+        src/segments.c\
+        src/serial.c\
+        src/stdio.c\
+        src/string.c
+SRCS_A:=src/segments.asm
 
 OBJ_DIR:=obj
-OBJS:=$(addprefix $(OBJ_DIR)/,$(SRCS:%.c=%.o))
+OBJS_C:=$(addprefix $(OBJ_DIR)/,$(SRCS_C:%.c=%.o))
+OBJS_A:=$(addprefix $(OBJ_DIR)/,$(SRCS_A:%.asm=%_asm.o))
+OBJS:=$(OBJS_C) $(OBJS_A)
 
 OUT_EXEC:=$(OBJ_DIR)/rkhv.elf
 
@@ -41,9 +47,13 @@ $(OUT_EXEC): $(OBJS)
 	@mkdir -p $(dir $@)
 	$(HV_CC) $(HV_LFLAGS) $^ -o $@
 
-$(OBJS): $(OBJ_DIR)/%.o: %.c
+$(OBJS_C): $(OBJ_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)
 	$(HV_CC) -MMD -MT $@ $(HV_CPPFLAGS) $(HV_CFLAGS) -c $< -o $@
+
+$(OBJS_A): $(OBJ_DIR)/%_asm.o: %.asm
+	@mkdir -p $(dir $@)
+	$(HV_ASM) -MD $(@:%.o=%.d) -MT $@ $(HV_AFLAGS) $< -o $@
 
 -include $(OBJS:%.o=%.d)
 
