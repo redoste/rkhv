@@ -93,7 +93,7 @@ EFI_STATUS paging_map_page(uint64_t* pml4,
 	const static uint64_t PERMISSION_MASK[PAGING_PERMISSION_MAX] = {
 		[PAGING_RX] = 0,
 		[PAGING_RO] = PTE_EXECUTE_DISABLE,
-		[PAGING_RW] = PTE_READ_WRITE,
+		[PAGING_RW] = PTE_EXECUTE_DISABLE | PTE_READ_WRITE,
 	};
 	static_assert(sizeof(PERMISSION_MASK) / sizeof(PERMISSION_MASK[0]) == 3, "Invalid PERMISSION_MASK size");
 
