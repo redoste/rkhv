@@ -47,6 +47,6 @@
 #define COM_LINE_STATUS_TRANSMITTER_EMPTY                  0x40
 #define COM_LINE_STATUS_IMPENDING_ERROR                    0x80
 
-void serial_putc(uint8_t c);
+void serial_write_byte(uint8_t c);
 
 #endif

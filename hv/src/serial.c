@@ -20,7 +20,7 @@ static void serial_init(void) {
 	 */
 }
 
-void serial_putc(uint8_t c) {
+void serial_write_byte(uint8_t c) {
 	if (!serial_initialized) {
 		serial_init();
 	}

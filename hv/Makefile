@@ -9,7 +9,8 @@ HV_LFLAGS?=-target $(HV_TARGET) $(LFLAGS_FREESTANDING) -fuse-ld=lld -T rkhv.ld $
 
 SRCS:=src/main.c\
       src/serial.c\
-      src/stdio.c
+      src/stdio.c\
+      src/string.c
 
 OBJ_DIR:=obj
 OBJS:=$(addprefix $(OBJ_DIR)/,$(SRCS:%.c=%.o))
