@@ -10,11 +10,13 @@ HV_LFLAGS?=-target $(HV_TARGET) $(LFLAGS_FREESTANDING) -fuse-ld=lld -T rkhv.ld $
 HV_AFLAGS?=-f elf64 $(AFLAGS_WARNS)
 
 SRCS_C:=src/main.c\
+        src/interrupts.c\
         src/segments.c\
         src/serial.c\
         src/stdio.c\
         src/string.c
-SRCS_A:=src/segments.asm
+SRCS_A:=src/interrupts.asm\
+        src/segments.asm
 
 OBJ_DIR:=obj
 OBJS_C:=$(addprefix $(OBJ_DIR)/,$(SRCS_C:%.c=%.o))
