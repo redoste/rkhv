@@ -11,6 +11,7 @@ HV_AFLAGS?=-f elf64 $(AFLAGS_WARNS)
 
 SRCS_C:=src/main.c\
         src/interrupts.c\
+        src/panic.c\
         src/segments.c\
         src/serial.c\
         src/stdio.c\

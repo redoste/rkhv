@@ -4,6 +4,7 @@
 #include "stdio.h"
 
 #include "interrupts.h"
+#include "panic.h"
 #include "segments.h"
 
 __attribute__((section(".text.entry"))) void hvmain(chainload_page_t* chainload_page) {
@@ -11,7 +12,5 @@ __attribute__((section(".text.entry"))) void hvmain(chainload_page_t* chainload_
 	segments_setup();
 	interrupts_setup();
 
-	while (1) {
-		asm("hlt");
-	}
+	PANIC("hvmain reached its end");
 }
