@@ -21,7 +21,9 @@ void interrupts_setup(void) {
 		IDT[idt_index].bitfield = IDT_GATE_DESCRIPTOR_BITFIELD_PRESENT |
 					  IDT_GATE_DESCRIPTOR_BITFIELD_GATE_TRAP | IDT_GATE_DESCRIPTOR_BITFIELD_DPL(0);
 	}
-	asm("lidt %0" : : "m"(IDTR));
+	asm("lidt %0"
+	    :
+	    : "m"(IDTR));
 	LOG("lidt done with IDT @ %p, enabling interrupts", (void*)IDT);
 	asm("sti");
 }

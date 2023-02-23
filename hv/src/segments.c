@@ -36,7 +36,9 @@ static gdt_segment_descriptor_t GDT[] = {
 static const gdtr_t GDTR = {sizeof(GDT) - 1, GDT};
 
 void segments_setup(void) {
-	asm("lgdt %0" : : "m"(GDTR));
+	asm("lgdt %0"
+	    :
+	    : "m"(GDTR));
 	LOG("lgdt done with GDT @ %p, switching segments", (void*)GDT);
 	segments_set_new_segs(RKHV_CS, RKHV_DS);
 }

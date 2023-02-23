@@ -18,9 +18,13 @@ bool paging_check_for_supported_level(void) {
 
 	uint64_t cr0, cr4;
 	uint32_t ia32_efer_high, ia32_efer_low, ia32_efer_msr = 0xc0000080;
-	asm("mov %%cr0, %0" : "=r"(cr0));
-	asm("mov %%cr4, %0" : "=r"(cr4));
-	asm("rdmsr" : "=d"(ia32_efer_high), "=a"(ia32_efer_low) : "c"(ia32_efer_msr));
+	asm("mov %%cr0, %0"
+	    : "=r"(cr0));
+	asm("mov %%cr4, %0"
+	    : "=r"(cr4));
+	asm("rdmsr"
+	    : "=d"(ia32_efer_high), "=a"(ia32_efer_low)
+	    : "c"(ia32_efer_msr));
 	return (cr0 & (1 << 31)) &&         // PG   : Paging
 	       (cr4 & (1 << 5)) &&          // PAE  : Physical Address Extension
 	       !(cr4 & (1 << 12)) &&        // LA57 : 57-Bit Linear Addresses
