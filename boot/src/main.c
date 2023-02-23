@@ -135,16 +135,9 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_table) {
 		}
 	} while (exit_boot_services_ret != EFI_SUCCESS);
 
-	for (size_t mmap_index = 0; mmap_index < mmap_size / desc_size; mmap_index++) {
-		if (mmap_index >= RKHV_MAX_EFI_MMAP_DESCRIPTORS) {
-			/* If we have that many descriptors, let's hope rkhv doesn't learn about them and break
-			 * something
-			 */
-			break;
-		}
-
+	for (size_t efi_mmap_index = 0, out_mmap_index = 0; efi_mmap_index < mmap_size / desc_size; efi_mmap_index++) {
 		// We need to do this because it's likely that desc_size != sizeof(EFI_MEMORY_DESCRIPTOR)
-		EFI_MEMORY_DESCRIPTOR* desc = (EFI_MEMORY_DESCRIPTOR*)((uint8_t*)mmap + (mmap_index * desc_size));
+		EFI_MEMORY_DESCRIPTOR* desc = (EFI_MEMORY_DESCRIPTOR*)((uint8_t*)mmap + (efi_mmap_index * desc_size));
 		bool usable;
 		switch (desc->Type) {
 			case EfiLoaderCode:
@@ -167,9 +160,27 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_table) {
 				usable = false;
 				break;
 		}
-		chainload_page->efi_mmap_usable[mmap_index].physical_address = desc->PhysicalStart;
-		chainload_page->efi_mmap_usable[mmap_index].pages = desc->NumberOfPages;
-		chainload_page->efi_mmap_usable[mmap_index].usable = usable;
+
+		chainload_mmap_desc_t* prev_chainload_descriptor = &chainload_page->efi_mmap_usable[out_mmap_index];
+		if (efi_mmap_index != 0 && prev_chainload_descriptor->usable == (int)usable &&
+		    prev_chainload_descriptor->physical_address + (prev_chainload_descriptor->pages * EFI_PAGE_SIZE) ==
+			    desc->PhysicalStart) {
+			prev_chainload_descriptor->pages += desc->NumberOfPages;
+		} else {
+			if (efi_mmap_index != 0) {
+				out_mmap_index++;
+			}
+			if (out_mmap_index >= RKHV_MAX_EFI_MMAP_DESCRIPTORS) {
+				/* If we have that many descriptors, let's hope rkhv doesn't learn about them and break
+				 * something
+				 */
+				break;
+			}
+
+			chainload_page->efi_mmap_usable[out_mmap_index].physical_address = desc->PhysicalStart;
+			chainload_page->efi_mmap_usable[out_mmap_index].pages = desc->NumberOfPages;
+			chainload_page->efi_mmap_usable[out_mmap_index].usable = (int)usable;
+		}
 	}
 
 	return chainload(chainload_page, pml4);
