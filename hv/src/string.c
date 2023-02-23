@@ -13,6 +13,21 @@ void str_itoh(char* out_string, uintptr_t value, size_t size) {
 	}
 }
 
+char* str_utoa(char* buffer, uintptr_t value, size_t buffer_size) {
+	size_t index = buffer_size - 1;
+	do {
+		buffer[index] = '0' + (value % 10);
+		value /= 10;
+		if (index == 0) {
+			break;
+		}
+		if (value != 0) {
+			index--;
+		}
+	} while (value != 0);
+	return buffer + index;
+}
+
 void str_printf_core(const char* fmt,
 		     va_list args,
 		     str_printf_char_handler char_handler,
@@ -44,6 +59,14 @@ void str_printf_core(const char* fmt,
 				uintptr_t value = va_arg(args, uintptr_t);
 				str_itoh(&buffer[2], value, 16);
 				string_handler(buffer);
+				break;
+			}
+			case 'u': {
+				char buffer[32];
+				uintptr_t value = va_arg(args, uintptr_t);
+				char* start = str_utoa(buffer, value, sizeof(buffer) - 1);
+				buffer[sizeof(buffer) - 1] = 0;
+				string_handler(start);
 				break;
 			}
 			case 'x': {

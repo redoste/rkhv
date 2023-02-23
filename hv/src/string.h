@@ -6,6 +6,7 @@
 #include <rkhv/stdint.h>
 
 void str_itoh(char* out_string, uintptr_t value, size_t size);
+char* str_utoa(char* buffer, uintptr_t value, size_t buffer_size);
 
 /* This is a custom printf implementation that doesn't use any memory allocation, thus it's usable before the memory
  * management is initialized. Even if the format strings look like the standard libc ones, this is a different language
@@ -13,6 +14,7 @@ void str_itoh(char* out_string, uintptr_t value, size_t size);
  * %%           : Percent
  * %s           : String
  * %p           : 64 bits pointer
+ * %u           : 64 bits unsigned integer
  * %x[pu][bwdq] : 0 left-padded hexadecimal unsigned integer
  *                p : prefixed by 0x          b : byte (uint8_t)
  *                u : unprefixed (default)    w : word (uint16_t)
