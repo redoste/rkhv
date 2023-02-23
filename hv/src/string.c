@@ -1,4 +1,5 @@
 #include <stdarg.h>
+#include <stdbool.h>
 
 #include <rkhv/stdint.h>
 
@@ -16,14 +17,19 @@ void str_printf_core(const char* fmt,
 		     va_list args,
 		     str_printf_char_handler char_handler,
 		     str_printf_string_handler string_handler) {
+	bool read_z = false;
 	while (*fmt) {
-		if (*fmt != '%') {
+		if (*fmt != '%' && !read_z) {
 			char_handler(*fmt);
 			fmt++;
 			continue;
 		}
 
-		fmt++;
+		if (!read_z) {
+			fmt++;
+		}
+		read_z = false;
+
 		char type = *fmt;
 		fmt++;
 
@@ -56,6 +62,10 @@ void str_printf_core(const char* fmt,
 				str_itoh(&buffer[2], value, len);
 				char* start = prefixed_char == 'p' ? buffer : &buffer[2];
 				string_handler(start);
+				break;
+			}
+			case 'z': {
+				read_z = true;
 				break;
 			}
 			default: {

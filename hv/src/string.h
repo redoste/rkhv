@@ -18,6 +18,7 @@ void str_itoh(char* out_string, uintptr_t value, size_t size);
  *                u : unprefixed (default)    w : word (uint16_t)
  *                                            d : dword (uint32_t)
  *                                            q : qword (uint64_t) (default)
+ * %z[format]   : Treated as [format], for printf warnings compatibility
  */
 typedef void str_printf_char_handler(char);
 typedef void str_printf_string_handler(const char*);
