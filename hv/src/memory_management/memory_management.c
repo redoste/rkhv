@@ -75,8 +75,7 @@ uintptr_t mm_get_free_page(void) {
 	while (true) {
 		uintptr_t current_page = mm_chainload_page->efi_mmap_usable[current_region_index].physical_address +
 					 current_page_index * PAGE_SIZE;
-		// TODO : find a proper way to use to first page, this is currently to prevent breaking NULL checks
-		if (current_page != 0 && mm_page_is_free(current_page)) {
+		if (mm_page_is_free(current_page)) {
 			last_returned_region_index = current_region_index;
 			last_returned_page_index = current_page_index;
 			return current_page;

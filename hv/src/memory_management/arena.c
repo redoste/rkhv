@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include <rkhv/memory_map.h>
 #include <rkhv/paging.h>
 #include <rkhv/stdint.h>
 
@@ -18,11 +19,11 @@ bool mm_page_used_by_arena(uintptr_t page_physical_address) {
 	page_physical_address &= PAGE_MASK;
 
 	for (arena_header_t* arena_it = arena_head; arena_it != NULL; arena_it = arena_it->next) {
-		if (page_physical_address == (uintptr_t)arena_it) {
+		if (page_physical_address == V2P_IDENTITY_MAP(arena_it)) {
 			return true;
 		}
 		for (arena_sub_header_t* sub_it = arena_it->subarenas; sub_it != NULL; sub_it = sub_it->next) {
-			if (page_physical_address == (uintptr_t)sub_it) {
+			if (page_physical_address == V2P_IDENTITY_MAP(sub_it)) {
 				return true;
 			}
 		}
@@ -68,7 +69,7 @@ void arena_destroy(arena_t* arena) {
 }
 
 arena_t* arena_create(void) {
-	arena_header_t* arena_page = (arena_header_t*)mm_get_free_page();
+	arena_header_t* arena_page = P2V_IDENTITY_MAP(mm_get_free_page());
 	arena_page->prev = NULL;
 	arena_page->next = arena_head;
 	arena_page->subarenas = NULL;

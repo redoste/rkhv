@@ -1,6 +1,7 @@
 #include <efi.h>
 
 #include <rkhv/chainload.h>
+#include <rkhv/memory_map.h>
 
 #include "chainload.h"
 #include "fs.h"
@@ -34,10 +35,10 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_table) {
 		size_t size_in_pages;
 		paging_permission_t permission;
 	} sections[RKHV_MAX_SECTIONS] = {
-		{u"\\" RKHV_EFI_PATH "\\rkhv.rx", EfiLoaderCode, 0xffffff0000000000, SECTION_PAGES, PAGING_RX},
-		{u"\\" RKHV_EFI_PATH "\\rkhv.ro", EfiLoaderData, 0xffffff0000100000, SECTION_PAGES, PAGING_RO},
-		{u"\\" RKHV_EFI_PATH "\\rkhv.rw", EfiLoaderData, 0xffffff0000200000, SECTION_PAGES, PAGING_RW},
-		{u"stack", EfiLoaderData, 0xfffffffffff00000, STACK_PAGES, PAGING_RW},
+		{u"\\" RKHV_EFI_PATH "\\rkhv.rx", EfiLoaderCode, RKHV_RX_BASE, SECTION_PAGES, PAGING_RX},
+		{u"\\" RKHV_EFI_PATH "\\rkhv.ro", EfiLoaderData, RKHV_RO_BASE, SECTION_PAGES, PAGING_RO},
+		{u"\\" RKHV_EFI_PATH "\\rkhv.rw", EfiLoaderData, RKHV_RW_BASE, SECTION_PAGES, PAGING_RW},
+		{u"stack", EfiLoaderData, RKHV_STACK_BASE, STACK_PAGES, PAGING_RW},
 	};
 	uintptr_t sections_physical_addresses[RKHV_MAX_SECTIONS];
 	for (size_t section_index = 0; section_index < sizeof(sections) / sizeof(sections[0]); section_index++) {
@@ -102,8 +103,8 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_table) {
 		}
 	}
 
-	VERIFY_EFI(stdio_puts(u"Building page table mapping flat physical memory in lower half\r\n"));
-	VERIFY_EFI(paging_map_flat_lower_half(pml4, &page_table_pool));
+	VERIFY_EFI(stdio_puts(u"Building page table identity mapping for physical memory\r\n"));
+	VERIFY_EFI(paging_map_physical(pml4, &page_table_pool));
 
 	memcpy(chainload_page->page_table_pages.physical_addresses, page_table_pool.pool,
 	       page_table_pool.size * sizeof(uintptr_t));
@@ -183,5 +184,5 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_table) {
 		}
 	}
 
-	return chainload(chainload_page, pml4);
+	return chainload(P2V_IDENTITY_MAP(chainload_page), pml4);
 }

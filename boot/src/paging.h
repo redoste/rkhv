@@ -24,6 +24,6 @@ EFI_STATUS paging_map_page(uint64_t* pml4,
 			   uintptr_t physical_address,
 			   uintptr_t virtual_address,
 			   paging_permission_t permission);
-EFI_STATUS paging_map_flat_lower_half(uint64_t* pml4, paging_page_table_pool_t* page_table_pool);
+EFI_STATUS paging_map_physical(uint64_t* pml4, paging_page_table_pool_t* page_table_pool);
 
 #endif

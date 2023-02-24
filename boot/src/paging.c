@@ -1,6 +1,7 @@
 #include <efi.h>
 #include <stdbool.h>
 
+#include <rkhv/memory_map.h>
 #include <rkhv/paging.h>
 
 #include "main.h"
@@ -106,14 +107,15 @@ EFI_STATUS paging_map_page(uint64_t* pml4,
 }
 
 // TODO : find a way to not keep all physical memory RWX once we chainloaded to rkhv kernel
-EFI_STATUS paging_map_flat_lower_half(uint64_t* pml4, paging_page_table_pool_t* page_table_pool) {
+EFI_STATUS paging_map_physical(uint64_t* pml4, paging_page_table_pool_t* page_table_pool) {
 	if (pml4[0] & PML4E_PRESENT) {
 		return EFI_OUT_OF_RESOURCES;
 	}
 
 	uint64_t* pdpt;
 	RETURN_EFI(paging_allocate_page(&pdpt, page_table_pool));
-	pml4[0] = PML4E_PRESENT | PML4E_READ_WRITE | ((uintptr_t)pdpt & PML4E_PHYSICAL_ADDRESS_PDPT);
+	pml4[LINEAR_ADDRESS_GET_PML4(0x0000000000000000)] = PML4E_PRESENT | PML4E_READ_WRITE | ((uintptr_t)pdpt & PML4E_PHYSICAL_ADDRESS_PDPT);
+	pml4[LINEAR_ADDRESS_GET_PML4(RKHV_PHYSICAL_MEMORY_BASE)] = PML4E_PRESENT | PML4E_READ_WRITE | ((uintptr_t)pdpt & PML4E_PHYSICAL_ADDRESS_PDPT);
 
 	for (size_t page_index = 0; page_index < EFI_PAGE_SIZE / sizeof(uint64_t); page_index++) {
 		pdpt[page_index] = PDPTE_PRESENT | PDPTE_READ_WRITE | PDPTE_PAGE_SIZE |

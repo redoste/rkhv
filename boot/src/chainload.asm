@@ -7,6 +7,15 @@ chainload:
 	mov rdi, rcx
 	mov cr3, rdx
 
+	; Jump to the new base for physical memory starting at 0x0000010000000000
+	mov rax, 0x0000010000000000 + .new_physical_base
+	jmp rax
+.new_physical_base:
+	; And disable the old paging for physical memory based at 0
+	xor rax, rax
+	mov [rdx], rax
+	mov cr3, rdx ; Ensure the TLB cache is updated
+
 	mov ecx, 0xc0000080 ; IA32_EFER
 	rdmsr
 	or eax, (1 << 11) ; IA32_EFER.NXE : Execute-disable bit enable
