@@ -1,7 +1,7 @@
 #include <rkhv/stdint.h>
 
 #define LOG_CATEGORY "segments"
-#include "stdio.h"
+#include <rkhv/stdio.h>
 
 #include "segments.h"
 

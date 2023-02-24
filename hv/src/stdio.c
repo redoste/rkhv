@@ -1,7 +1,8 @@
 #include <stdarg.h>
 
+#include <rkhv/stdio.h>
+
 #include "serial.h"
-#include "stdio.h"
 #include "string.h"
 
 static inline void stdio_putc(const char c) {

@@ -1,10 +1,10 @@
 #include <rkhv/chainload.h>
 
 #define LOG_CATEGORY "main"
-#include "stdio.h"
+#include <rkhv/panic.h>
+#include <rkhv/stdio.h>
 
 #include "interrupts.h"
-#include "panic.h"
 #include "segments.h"
 
 __attribute__((section(".text.entry")))

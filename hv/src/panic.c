@@ -1,9 +1,8 @@
 #include <rkhv/stdint.h>
 
 #define LOG_CATEGORY "panic"
-#include "stdio.h"
-
-#include "panic.h"
+#include <rkhv/panic.h>
+#include <rkhv/stdio.h>
 
 void __attribute__((noreturn)) panic(const char* message, const char* filename, unsigned int line_number) {
 	asm("cli");

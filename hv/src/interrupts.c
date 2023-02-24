@@ -3,7 +3,7 @@
 #include <rkhv/stdint.h>
 
 #define LOG_CATEGORY "interrupts"
-#include "stdio.h"
+#include <rkhv/stdio.h>
 
 #include "interrupts.h"
 #include "segments.h"
