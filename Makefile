@@ -10,7 +10,7 @@ all: $(SUB_DIRS)
 $(SUB_DIRS):
 	$(MAKE) -C $@
 
-OVMF_PATH?=/usr/share/edk2/x64/OVMF.fd
+OVMF_PATH?=$(shell ./scripts/select_qemu_firmware.sh)
 ifdef QEMU_GDB
 	QEMU_ARGS:=-S -s
 endif
@@ -18,7 +18,7 @@ endif
 run: $(SUB_DIRS)
 	qemu-system-x86_64 -enable-kvm \
 		-drive file=fat:rw:boot/hda/,format=raw \
-		-bios $(OVMF_PATH) \
+		-drive file="$(OVMF_PATH)",if=pflash,format=raw,readonly=on \
 		-m 512M \
 		-serial stdio \
 		$(QEMU_ARGS)
