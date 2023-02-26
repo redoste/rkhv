@@ -1,6 +1,7 @@
 #include <efi.h>
 #include <stdbool.h>
 
+#include <rkhv/cr_msr.h>
 #include <rkhv/memory_map.h>
 #include <rkhv/paging.h>
 
@@ -17,19 +18,12 @@ bool paging_check_for_supported_level(void) {
 	 * > A logical processor uses 4-level paging if CR0.PG = 1, CR4.PAE = 1, IA32_EFER.LME = 1, and CR4.LA57 = 0.
 	 */
 
-	uint64_t cr0, cr4;
-	uint32_t ia32_efer_high, ia32_efer_low, ia32_efer_msr = 0xc0000080;
-	asm("mov %%cr0, %0"
-	    : "=r"(cr0));
-	asm("mov %%cr4, %0"
-	    : "=r"(cr4));
-	asm("rdmsr"
-	    : "=d"(ia32_efer_high), "=a"(ia32_efer_low)
-	    : "c"(ia32_efer_msr));
-	return (cr0 & (1 << 31)) &&         // PG   : Paging
-	       (cr4 & (1 << 5)) &&          // PAE  : Physical Address Extension
-	       !(cr4 & (1 << 12)) &&        // LA57 : 57-Bit Linear Addresses
-	       (ia32_efer_low & (1 << 8));  // LME  : Long Mode Enable
+	uint64_t cr0 = cr0_read(), cr4 = cr4_read();
+	uint64_t ia32_efer = rdmsr(IA32_EFER);
+	return (cr0 & (1 << 31)) &&     // PG   : Paging
+	       (cr4 & (1 << 5)) &&      // PAE  : Physical Address Extension
+	       !(cr4 & (1 << 12)) &&    // LA57 : 57-Bit Linear Addresses
+	       (ia32_efer & (1 << 8));  // LME  : Long Mode Enable
 }
 
 static EFI_STATUS paging_allocate_page(uint64_t** page, paging_page_table_pool_t* page_table_pool) {
