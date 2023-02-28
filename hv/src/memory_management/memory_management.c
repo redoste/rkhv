@@ -8,6 +8,7 @@
 
 #include "arena.h"
 #include "memory_management.h"
+#include "vmm_vmx_pages.h"
 
 static chainload_page_t* mm_chainload_page;
 
@@ -39,6 +40,7 @@ static bool mm_page_is_free(uintptr_t page_physical_address) {
 	static bool (*const page_used_by_functions[])(uintptr_t) = {
 		mm_page_used_by_chainload,
 		mm_page_used_by_arena,
+		mm_page_used_by_vmx,
 	};
 	for (size_t i = 0; i < sizeof(page_used_by_functions) / sizeof(page_used_by_functions[0]); i++) {
 		if (page_used_by_functions[i](page_physical_address)) {

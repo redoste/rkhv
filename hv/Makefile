@@ -13,13 +13,17 @@ SRCS_C:=src/main.c\
         src/interrupts.c\
         src/memory_management/arena.c\
         src/memory_management/memory_management.c\
+        src/memory_management/vmm_vmx_pages.c\
         src/panic.c\
         src/segments.c\
         src/serial.c\
         src/stdio.c\
-        src/string.c
+        src/string.c\
+        src/vmm/vmx_init.c\
+        src/vmm/vmx_instructions.c
 SRCS_A:=src/interrupts.asm\
-        src/segments.asm
+        src/segments.asm\
+        src/vmm/vmx_instructions.asm
 
 OBJ_DIR:=obj
 OBJS_C:=$(addprefix $(OBJ_DIR)/,$(SRCS_C:%.c=%.o))
