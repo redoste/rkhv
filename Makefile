@@ -17,6 +17,7 @@ endif
 .PHONY: run
 run: $(SUB_DIRS)
 	qemu-system-x86_64 -enable-kvm \
+		-cpu host \
 		-drive file=fat:rw:boot/hda/,format=raw \
 		-drive file="$(OVMF_PATH)",if=pflash,format=raw,readonly=on \
 		-m 512M \
