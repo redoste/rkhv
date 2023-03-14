@@ -51,6 +51,8 @@
 #define RKHV_RW_BASE              0xffffff0000200000
 #define RKHV_STACK_BASE           0xfffffffffff00000
 
+#define RKHV_STACK_TOP 0xfffffffffffffff8
+
 #define P2V_IDENTITY_MAP(pa) ((void*)(((uintptr_t)(pa)) + RKHV_PHYSICAL_MEMORY_BASE))
 #define V2P_IDENTITY_MAP(va) (((uintptr_t)(va)) - RKHV_PHYSICAL_MEMORY_BASE)
 

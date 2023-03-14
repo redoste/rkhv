@@ -3,12 +3,17 @@
 
 #include <stdint.h>
 
-#define IA32_EFER           0xc0000080
-#define IA32_VMX_BASIC      0x480
-#define IA32_VMX_CR0_FIXED0 0x486
-#define IA32_VMX_CR0_FIXED1 0x487
-#define IA32_VMX_CR4_FIXED0 0x488
-#define IA32_VMX_CR4_FIXED1 0x489
+#define IA32_EFER                0xc0000080
+#define IA32_VMX_BASIC           0x480
+#define IA32_VMX_PINBASED_CTLS   0x481
+#define IA32_VMX_PROCBASED_CTLS  0x482
+#define IA32_VMX_EXIT_CTLS       0x483
+#define IA32_VMX_CR0_FIXED0      0x486
+#define IA32_VMX_ENTRY_CTLS      0x484
+#define IA32_VMX_CR0_FIXED1      0x487
+#define IA32_VMX_CR4_FIXED0      0x488
+#define IA32_VMX_CR4_FIXED1      0x489
+#define IA32_VMX_PROCBASED_CTLS2 0x48B
 
 static inline uint64_t rdmsr(uint32_t msr) {
 	uint32_t ret_high, ret_low;

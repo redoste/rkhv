@@ -20,10 +20,14 @@ SRCS_C:=src/main.c\
         src/stdio.c\
         src/string.c\
         src/vmm/vmx_init.c\
-        src/vmm/vmx_instructions.c
+        src/vmm/vmx_instructions.c\
+        src/vmm/vmx_vmcs.c\
+        src/vmm/vmx_vmexit.c
 SRCS_A:=src/interrupts.asm\
         src/segments.asm\
-        src/vmm/vmx_instructions.asm
+        src/vmm/guest_hello_world.asm\
+        src/vmm/vmx_instructions.asm\
+        src/vmm/vmx_vmexit.asm
 
 OBJ_DIR:=obj
 OBJS_C:=$(addprefix $(OBJ_DIR)/,$(SRCS_C:%.c=%.o))
