@@ -23,7 +23,6 @@ vmx_inst_error_t vmx_vmptrld(uintptr_t vmcs_region_physical_address);
 vmx_inst_error_t vmx_vmread(uint64_t field_encoding, uint64_t* value);
 vmx_inst_error_t vmx_vmwrite(uint64_t field_encoding, uint64_t value);
 vmx_inst_error_t vmx_vmlaunch(void);
-vmx_inst_error_t vmx_vmresume(void);
 
 void vmx_perror(const char* message, vmx_inst_error_t error);
 

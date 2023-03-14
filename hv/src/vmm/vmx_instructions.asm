@@ -51,8 +51,3 @@ global vmx_vmlaunch
 vmx_vmlaunch:
 	vmlaunch
 	jmp vmx_error_check
-
-global vmx_vmresume
-vmx_vmresume:
-	vmresume
-	jmp vmx_error_check
