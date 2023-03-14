@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 #include <rkhv/io_ports.h>
+#include <rkhv/serial.h>
 
 #include "serial.h"
 
