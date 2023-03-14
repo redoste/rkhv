@@ -1,6 +1,7 @@
 #include <rkhv/stdint.h>
 
 #define LOG_CATEGORY "segments"
+#include <rkhv/segments.h>
 #include <rkhv/stdio.h>
 
 #include "segments.h"
@@ -35,10 +36,14 @@ static gdt_segment_descriptor_t GDT[] = {
 
 static const gdtr_t GDTR = {sizeof(GDT) - 1, GDT};
 
+static inline void segments_lgdt(const gdtr_t* gdtr) {
+	asm volatile("lgdt %0"
+		     :
+		     : "m"(*gdtr));
+}
+
 void segments_setup(void) {
-	asm("lgdt %0"
-	    :
-	    : "m"(GDTR));
+	segments_lgdt(&GDTR);
 	LOG("lgdt done with GDT @ %p, switching segments", (void*)GDT);
 	segments_set_new_segs(RKHV_CS, RKHV_DS);
 }
