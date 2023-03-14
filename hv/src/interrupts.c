@@ -3,6 +3,7 @@
 #include <rkhv/stdint.h>
 
 #define LOG_CATEGORY "interrupts"
+#include <rkhv/interrupts.h>
 #include <rkhv/stdio.h>
 
 #include "interrupts.h"
@@ -10,6 +11,12 @@
 
 static idt_gate_descriptor_t IDT[IDT_LEN];
 static const idtr_t IDTR = {sizeof(IDT) - 1, IDT};
+
+static inline void interrupts_lidt(const idtr_t* idtr) {
+	asm volatile("lidt %0"
+		     :
+		     : "m"(*idtr));
+}
 
 void interrupts_setup(void) {
 	for (size_t idt_index = 0; idt_index < IDT_LEN; idt_index++) {
@@ -21,9 +28,7 @@ void interrupts_setup(void) {
 		IDT[idt_index].bitfield = IDT_GATE_DESCRIPTOR_BITFIELD_PRESENT |
 					  IDT_GATE_DESCRIPTOR_BITFIELD_GATE_TRAP | IDT_GATE_DESCRIPTOR_BITFIELD_DPL(0);
 	}
-	asm("lidt %0"
-	    :
-	    : "m"(IDTR));
+	interrupts_lidt(&IDTR);
 	LOG("lidt done with IDT @ %p, enabling interrupts", (void*)IDT);
 	asm("sti");
 }
