@@ -13,15 +13,20 @@
 #include "vmx_vmcs.h"
 #include "vmx_vmexit.h"
 
-static inline uint32_t vmx_ensure_allowed_bits(uint64_t msr, uint32_t mask) {
+static inline uint32_t vmx_ensure_allowed_bits(uint64_t field_encoding, uint64_t msr, uint32_t mask) {
 	uint64_t msr_value = rdmsr(msr);
 	uint32_t allowed_zeros = msr_value & 0xffffffff;
 	uint32_t allowed_ones = msr_value >> 32;
 
-	LOG("Control-field allowed bits checked with msr %zxpq = %xud:%xud", msr, allowed_ones, allowed_zeros);
+	uint32_t result = (mask | allowed_zeros) & allowed_ones;
 
-	// TODO : add warning on unsupported but required features
-	return (mask | allowed_zeros) & allowed_ones;
+	LOG("VMCS CF 0x%zxtq allowed bits checked with msr 0x%zxtq = %xud:%xud : %xpd => %xpd",
+	    field_encoding, msr, allowed_ones, allowed_zeros, mask, result);
+	if ((mask & allowed_ones) != mask) {
+		LOG("WARNING : Potentially unsupported feature flags used on VMCS CF 0x%zxtq", field_encoding);
+	}
+
+	return result;
 }
 
 extern void vm_guest_hello_world(void);
@@ -171,9 +176,7 @@ uintptr_t vmx_create_initialized_vmcs(void) {
 		uint64_t value = default_vmcs_fields[i].value;
 		uint64_t field_encoding = default_vmcs_fields[i].field_encoding;
 		if (allowed_msr != 0) {
-			uint64_t new_value = vmx_ensure_allowed_bits(allowed_msr, value);
-			LOG("VMCS field with encoding %zxpq : %zxpq => %zxpq", field_encoding, value, new_value);
-			value = new_value;
+			value = vmx_ensure_allowed_bits(field_encoding, allowed_msr, value);
 		}
 		VMX_ASSERT(vmx_vmwrite(field_encoding, value));
 	}
