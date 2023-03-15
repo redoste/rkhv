@@ -147,10 +147,13 @@ uintptr_t vmx_create_initialized_vmcs(void) {
 		{VMCS_GUEST_FS_ACCESS_RIGHTS, ds_access_right, 0},
 		{VMCS_GUEST_GS_ACCESS_RIGHTS, ds_access_right, 0},
 		{VMCS_GUEST_LDTR_ACCESS_RIGHTS, VMCS_UNUSABLE_SEGMENT, 0},
-		/* NOTE : Even though the VM-Entry checks on guest segment registers (Vol 3 Chapter 27.3.1.2) says
-		 *        that TR cannot have the Present bit (bit 7) unset, it works and makes sense
-		 */
-		{VMCS_GUEST_TR_ACCESS_RIGHTS, 0x0000008b, 0},
+		{
+			VMCS_GUEST_TR_ACCESS_RIGHTS,
+			GDT_SEGMENT_DESCRIPTOR_ACCESS_PRESENT |
+				GDT_SEGMENT_DESCRIPTOR_ACCESS_SYSTEM |
+				GDT_SEGMENT_DESCRIPTOR_SYSTEM_TYPE_TSS_BUSY,
+			0,
+		},
 
 		{VMCS_GUEST_CR0, cr0_read(), 0},
 		{VMCS_GUEST_CR3, cr3_read(), 0},
