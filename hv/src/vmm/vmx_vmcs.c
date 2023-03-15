@@ -29,6 +29,12 @@ static inline uint32_t vmx_ensure_allowed_bits(uint64_t field_encoding, uint64_t
 	return result;
 }
 
+static inline uint32_t vmx_read_segment_access_right_from_gdt(uint16_t segment_selector,
+							      const gdt_segment_descriptor_t* gdt) {
+	const gdt_segment_descriptor_t* segment_descriptor = &gdt[segment_selector >> 3];
+	return ((segment_descriptor->flags & 0xf0) << 8) | segment_descriptor->access;
+}
+
 extern void vm_guest_hello_world(void);
 
 uintptr_t vmx_create_initialized_vmcs(void) {
@@ -42,6 +48,8 @@ uintptr_t vmx_create_initialized_vmcs(void) {
 
 	gdtr_t gdtr;
 	segments_sgdt(&gdtr);
+	uint32_t ds_access_right = vmx_read_segment_access_right_from_gdt(RKHV_DS, gdtr.offset);
+	uint32_t cs_access_right = vmx_read_segment_access_right_from_gdt(RKHV_CS, gdtr.offset);
 
 	struct {
 		uint64_t field_encoding;
@@ -132,13 +140,12 @@ uintptr_t vmx_create_initialized_vmcs(void) {
 		{VMCS_GUEST_LDTR_LIMIT, 0xffff, 0},
 		{VMCS_GUEST_TR_LIMIT, 0xffff, 0},
 
-		// TODO : Read segments access rights from GDT
-		{VMCS_GUEST_ES_ACCESS_RIGHTS, 0x0000c093, 0},
-		{VMCS_GUEST_CS_ACCESS_RIGHTS, 0x0000a09b, 0},
-		{VMCS_GUEST_SS_ACCESS_RIGHTS, 0x0000c093, 0},
-		{VMCS_GUEST_DS_ACCESS_RIGHTS, 0x0000c093, 0},
-		{VMCS_GUEST_FS_ACCESS_RIGHTS, 0x0000c093, 0},
-		{VMCS_GUEST_GS_ACCESS_RIGHTS, 0x0000c093, 0},
+		{VMCS_GUEST_ES_ACCESS_RIGHTS, ds_access_right, 0},
+		{VMCS_GUEST_CS_ACCESS_RIGHTS, cs_access_right, 0},
+		{VMCS_GUEST_SS_ACCESS_RIGHTS, ds_access_right, 0},
+		{VMCS_GUEST_DS_ACCESS_RIGHTS, ds_access_right, 0},
+		{VMCS_GUEST_FS_ACCESS_RIGHTS, ds_access_right, 0},
+		{VMCS_GUEST_GS_ACCESS_RIGHTS, ds_access_right, 0},
 		{VMCS_GUEST_LDTR_ACCESS_RIGHTS, VMCS_UNUSABLE_SEGMENT, 0},
 		/* NOTE : Even though the VM-Entry checks on guest segment registers (Vol 3 Chapter 27.3.1.2) says
 		 *        that TR cannot have the Present bit (bit 7) unset, it works and makes sense
