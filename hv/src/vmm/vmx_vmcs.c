@@ -115,8 +115,8 @@ uintptr_t vmx_create_initialized_vmcs(void) {
 		{VMCS_GUEST_DS, RKHV_DS, 0},
 		{VMCS_GUEST_FS, RKHV_DS, 0},
 		{VMCS_GUEST_GS, RKHV_DS, 0},
-		{VMCS_GUEST_TR, RKHV_DS, 0},
-		{VMCS_GUEST_LDTR, RKHV_DS, 0},
+		{VMCS_GUEST_TR, 0, 0},
+		{VMCS_GUEST_LDTR, 0, 0},
 
 		{VMCS_GUEST_FS_BASE, 0, 0},
 		{VMCS_GUEST_GS_BASE, 0, 0},
