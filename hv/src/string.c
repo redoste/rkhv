@@ -1,16 +1,22 @@
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #include <rkhv/stdint.h>
 
 #include "string.h"
 
-void str_itoh(char* out_string, uintptr_t value, size_t size) {
+char* str_itoh(char* out_string, uintptr_t value, size_t size) {
+	char* trimmed_start = NULL;
 	for (intptr_t index = size - 1; index >= 0; index--) {
 		uint8_t nibble = value & 0xf;
 		out_string[index] = nibble < 10 ? (u'0' + nibble) : (u'a' + nibble - 10);
 		value = value >> 4;
+		if (value == 0 && trimmed_start == NULL) {
+			trimmed_start = &out_string[index];
+		}
 	}
+	return trimmed_start;
 }
 
 char* str_utoa(char* buffer, uintptr_t value, size_t buffer_size) {
@@ -82,8 +88,10 @@ void str_printf_core(const char* fmt,
 							       : 16;
 
 				buffer[len + 2] = 0;
-				str_itoh(&buffer[2], value, len);
-				char* start = prefixed_char == 'p' ? buffer : &buffer[2];
+				char* trimmed_start = str_itoh(&buffer[2], value, len);
+				char* start = prefixed_char == 't'   ? trimmed_start
+					      : prefixed_char == 'p' ? buffer
+								     : &buffer[2];
 				string_handler(start);
 				break;
 			}
