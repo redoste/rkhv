@@ -27,14 +27,15 @@ static void vmx_vmexit_io(uint64_t exit_qualification, vmx_vmexit_reg_state_t* v
 	}
 
 	uint8_t read_byte = vm_reg_state->rax & 0xff;
-	if (vm_serial_buffer_size >= sizeof(vm_serial_buffer)) {
+	if (vm_serial_buffer_size >= sizeof(vm_serial_buffer) - 1) {
 		// We should have already flushed it
 		vm_serial_buffer_size = 0;
 	}
 	vm_serial_buffer[vm_serial_buffer_size] = read_byte;
 	vm_serial_buffer_size++;
 
-	if (read_byte == '\n' || vm_serial_buffer_size >= sizeof(vm_serial_buffer)) {
+	if (read_byte == '\n' || vm_serial_buffer_size >= sizeof(vm_serial_buffer) - 1) {
+		vm_serial_buffer[vm_serial_buffer_size] = 0;
 		// TODO : trim or check for new line
 		stdio_printf("\033[34;1mvm(COM1):\033[0m %s", vm_serial_buffer);
 		vm_serial_buffer_size = 0;
