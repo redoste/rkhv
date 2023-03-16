@@ -133,12 +133,8 @@ uintptr_t vmx_create_initialized_vmcs(void) {
 		{VMCS_GUEST_SS_LIMIT, 0xffffffff, 0},
 		{VMCS_GUEST_DS_LIMIT, 0xffffffff, 0},
 		{VMCS_GUEST_ES_LIMIT, 0xffffffff, 0},
-		/* NOTE : Even though it isn't mentioned in the VM-Entry checks on guest segment registers
-		 *        (Vol 3 Chapter 27.3.1.2) the limit can't be 0, thus we use the default real-mode value for
-		 *        unused segments
-		 */
-		{VMCS_GUEST_LDTR_LIMIT, 0xffff, 0},
-		{VMCS_GUEST_TR_LIMIT, 0xffff, 0},
+		{VMCS_GUEST_LDTR_LIMIT, 0, 0},
+		{VMCS_GUEST_TR_LIMIT, 0, 0},
 
 		{VMCS_GUEST_ES_ACCESS_RIGHTS, ds_access_right, 0},
 		{VMCS_GUEST_CS_ACCESS_RIGHTS, cs_access_right, 0},
