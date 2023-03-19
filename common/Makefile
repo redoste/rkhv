@@ -2,7 +2,8 @@ CC=clang
 ASM=nasm
 
 CPPFLAGS_COMMON:=-DRKHV_HASH=\"$(shell git rev-parse --short HEAD 2>/dev/null || echo 0000000)\" -I../common/include/
-CFLAGS_WARNS:=-Wall -Wextra -Wstrict-prototypes -Wpedantic -Wswitch-enum -Wvla -Werror -Wno-language-extension-token
+CFLAGS_WARNS:=-Wall -Wextra -Wstrict-prototypes -Wpedantic -Wswitch-enum -Wvla -Werror \
+              -Wno-language-extension-token -Wno-microsoft-static-assert -Wno-unknown-warning-option
 AFLAGS_WARNS:=-Werror
 
 CFLAGS_FREESTANDING:=-nostdlibinc -ffreestanding -mno-red-zone
