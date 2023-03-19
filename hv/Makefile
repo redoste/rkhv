@@ -19,6 +19,8 @@ SRCS_C:=src/main.c\
         src/serial.c\
         src/stdio.c\
         src/string.c\
+        src/vmm/vm_emulated_instructions.c\
+        src/vmm/vm_ioports.c\
         src/vmm/vmx_init.c\
         src/vmm/vmx_instructions.c\
         src/vmm/vmx_vmcs.c\
