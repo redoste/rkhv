@@ -1,5 +1,6 @@
 #include <rkhv/cr_msr.h>
 #include <rkhv/memory_map.h>
+#include <rkhv/rflags.h>
 #include <rkhv/stdint.h>
 
 #define LOG_CATEGORY "vmx"
@@ -162,7 +163,7 @@ uintptr_t vmx_create_initialized_vmcs(void) {
 
 		{VMCS_GUEST_RSP, 0, 0},  // TODO : allocate a stack for the guest
 		{VMCS_GUEST_RIP, (uintptr_t)&vm_guest_hello_world, 0},
-		{VMCS_GUEST_RFLAGS, (1 << 1), /* Bit 1 : reserved and set */ 0},
+		{VMCS_GUEST_RFLAGS, RFLAGS_RESERVED, 0},
 
 		{VMCS_GUEST_IA32_SYSENTER_ESP, 0, 0},
 		{VMCS_GUEST_IA32_SYSENTER_EIP, 0, 0},
