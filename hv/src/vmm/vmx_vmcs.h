@@ -73,6 +73,17 @@
 #define VMCS_CF_PPBVMEC_UNCONDITIONAL_IO_EXITING    (1 << 24)
 #define VMCS_CF_PPBVMEC_ACTIVATE_SECONDARY_CONTROLS (1 << 31)
 
+/* Secondary Processor-Based VM-Execution Controls bits : Vol 3 Table 25-7 */
+#define VMCS_CF_SPBVMEC_ENABLE_EPT (1 << 1)
+
+/* Extended-Page-Table Pointer : Vol 3 Table 25-9 */
+#define VMCS_CF_EPTP_UNCACHEABLE             0
+#define VMCS_CF_EPTP_WRITE_BACK              6
+#define VMCS_CF_EPTP_PAGE_WALK_LENGTH_4      (3 << 3)
+#define VMCS_CF_EPTP_ACCESSED_DIRTY_FLAGS    (1 << 6)
+#define VMCS_CF_EPTP_SUPERVISOR_SHADOW_STACK (1 << 7)
+#define VMCS_CF_EPTP_PHYSICAL_ADDRESS_PML4   (~0xfff)
+
 /* VM-Exit Controls bits : Vol 3 Table 25-13 */
 #define VMCS_CF_VMEX_HOST_ADDRESS_SPACE_SIZE (1 << 9)
 
@@ -171,6 +182,6 @@
 #define VMCS_VM_EXIT_INSTRUCTION_LENGTH 0x0000440C
 #define VMCS_EXIT_QUALIFICATION         0x00006400
 
-uintptr_t vmx_create_initialized_vmcs(void);
+uintptr_t vmx_create_initialized_vmcs(uintptr_t eptp);
 
 #endif

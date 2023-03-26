@@ -7,6 +7,7 @@
 #include "interrupts.h"
 #include "memory_management/memory_management.h"
 #include "segments.h"
+#include "vmm/vmx_ept.h"
 #include "vmm/vmx_init.h"
 #include "vmm/vmx_instructions.h"
 #include "vmm/vmx_vmcs.h"
@@ -21,7 +22,9 @@ hvmain(chainload_page_t* chainload_page) {
 
 	vmx_setup();
 
-	uintptr_t vmcs_region = vmx_create_initialized_vmcs();
+	uintptr_t eptp = vmx_ept_create_transparent();
+	LOG("new transparent EPT created @ %p", (void*)eptp);
+	uintptr_t vmcs_region = vmx_create_initialized_vmcs(eptp);
 	LOG("new initialized VMCS created @ %p", (void*)vmcs_region);
 	VMX_ASSERT(vmx_vmptrld(vmcs_region));
 	LOG("VMCS now active and current, about to vmlaunch");

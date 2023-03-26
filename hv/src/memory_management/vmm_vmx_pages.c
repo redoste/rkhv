@@ -16,6 +16,9 @@ static uintptr_t vmxon_region = (uintptr_t)NULL;
 static uintptr_t vmcs_regions[VMX_MAX_VMCS];
 static size_t vmcs_regions_size = 0;
 
+static uintptr_t ept_pages[VMX_MAX_EPT_PAGES];
+static size_t ept_pages_size = 0;
+
 bool mm_page_used_by_vmx(uintptr_t page_physical_address) {
 	if (page_physical_address == vmxon_region) {
 		return true;
@@ -23,6 +26,12 @@ bool mm_page_used_by_vmx(uintptr_t page_physical_address) {
 
 	for (size_t i = 0; i < vmcs_regions_size; i++) {
 		if (page_physical_address == vmcs_regions[i]) {
+			return true;
+		}
+	}
+
+	for (size_t i = 0; i < ept_pages_size; i++) {
+		if (page_physical_address == ept_pages[i]) {
 			return true;
 		}
 	}
@@ -56,4 +65,15 @@ uintptr_t vmx_get_new_vmcs_region(void) {
 
 	vmcs_regions[vmcs_regions_size++] = vmcs_region;
 	return vmcs_region;
+}
+
+uint64_t* vmx_allocate_ept_page(void) {
+	if (ept_pages_size >= VMX_MAX_EPT_PAGES) {
+		PANIC("Maximum EPT pages exceeded");
+	}
+
+	uintptr_t ept_page = mm_get_free_page();
+	ept_pages[ept_pages_size++] = ept_page;
+
+	return P2V_IDENTITY_MAP(ept_page);
 }

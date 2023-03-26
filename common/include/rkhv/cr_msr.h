@@ -13,6 +13,7 @@
 #define IA32_VMX_CR0_FIXED1      0x487
 #define IA32_VMX_CR4_FIXED0      0x488
 #define IA32_VMX_CR4_FIXED1      0x489
+#define IA32_VMX_EPT_VPID_CAP    0x48C
 #define IA32_VMX_PROCBASED_CTLS2 0x48B
 
 static inline uint64_t rdmsr(uint32_t msr) {

@@ -38,7 +38,7 @@ static inline uint32_t vmx_read_segment_access_right_from_gdt(uint16_t segment_s
 
 extern void vm_guest_hello_world(void);
 
-uintptr_t vmx_create_initialized_vmcs(void) {
+uintptr_t vmx_create_initialized_vmcs(uintptr_t eptp) {
 	uintptr_t vmcs_region = vmx_get_new_vmcs_region();
 
 	VMX_ASSERT(vmx_vmclear(vmcs_region));
@@ -65,7 +65,19 @@ uintptr_t vmx_create_initialized_vmcs(void) {
 				VMCS_CF_PPBVMEC_ACTIVATE_SECONDARY_CONTROLS,
 			IA32_VMX_PROCBASED_CTLS,
 		},
-		{VMCS_CF_SECONDARY_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, 0, IA32_VMX_PROCBASED_CTLS2},
+		{
+			VMCS_CF_SECONDARY_PROCESSOR_BASED_VM_EXECUTION_CONTROLS,
+			VMCS_CF_SPBVMEC_ENABLE_EPT,
+			IA32_VMX_PROCBASED_CTLS2,
+		},
+
+		{
+			VMCS_CF_EPT_POINTER,
+			(eptp & VMCS_CF_EPTP_PHYSICAL_ADDRESS_PML4) |
+				VMCS_CF_EPTP_PAGE_WALK_LENGTH_4 |
+				VMCS_CF_EPTP_WRITE_BACK,
+			0,
+		},
 
 		{VMCS_CF_PIN_BASED_VM_EXECUTION_CONTROLS, 0, IA32_VMX_PINBASED_CTLS},
 
