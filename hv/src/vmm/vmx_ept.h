@@ -89,6 +89,6 @@
 #define EPT_PTE_SUBPAGE_WRITE_PERMISSIONS 0x2000000000000000
 #define EPT_PTE_SUPPRESS_VE               0x8000000000000000
 
-uintptr_t vmx_ept_create_transparent(void);
+uintptr_t vmx_ept_create_identity_mapping(void);
 
 #endif

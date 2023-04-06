@@ -5,7 +5,7 @@
 
 #include "vmx_ept.h"
 
-uintptr_t vmx_ept_create_transparent(void) {
+uintptr_t vmx_ept_create_identity_mapping(void) {
 	uint64_t* ept_pdpt = vmx_allocate_ept_page();
 	for (size_t i = 0; i < PAGE_SIZE / sizeof(uint64_t); i++) {
 		ept_pdpt[i] = EPT_PDPTE_READ | EPT_PDPTE_WRITE | EPT_PDPTE_EXECUTE | EPT_PDPTE_PAGE_SIZE |

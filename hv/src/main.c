@@ -22,8 +22,8 @@ hvmain(chainload_page_t* chainload_page) {
 
 	vmx_setup();
 
-	uintptr_t eptp = vmx_ept_create_transparent();
-	LOG("new transparent EPT created @ %p", (void*)eptp);
+	uintptr_t eptp = vmx_ept_create_identity_mapping();
+	LOG("new identity mapped EPT created @ %p", (void*)eptp);
 	uintptr_t vmcs_region = vmx_create_initialized_vmcs(eptp);
 	LOG("new initialized VMCS created @ %p", (void*)vmcs_region);
 	VMX_ASSERT(vmx_vmptrld(vmcs_region));
