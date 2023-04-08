@@ -19,11 +19,13 @@ static bool mm_page_used_by_chainload(uintptr_t page_physical_address) {
 		return true;
 	}
 
-	for (size_t sections_index = 0; sections_index < RKHV_MAX_SECTIONS; sections_index++) {
-		uintptr_t section_first_page = mm_chainload_page->rkhv_sections[sections_index].physical_address;
-		uintptr_t section_last_page = section_first_page + ((mm_chainload_page->rkhv_sections[sections_index].pages - 1) * PAGE_SIZE);
-		if (page_physical_address >= section_first_page && page_physical_address <= section_last_page) {
-			return true;
+	for (size_t section_index = 0; section_index < RKHV_MAX_SECTIONS; section_index++) {
+		if (mm_chainload_page->rkhv_sections[section_index].pages > 0) {
+			uintptr_t section_first_page = mm_chainload_page->rkhv_sections[section_index].physical_address;
+			uintptr_t section_last_page = section_first_page + ((mm_chainload_page->rkhv_sections[section_index].pages - 1) * PAGE_SIZE);
+			if (page_physical_address >= section_first_page && page_physical_address <= section_last_page) {
+				return true;
+			}
 		}
 	}
 
