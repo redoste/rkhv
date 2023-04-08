@@ -130,14 +130,25 @@ EFI_STATUS paging_map_physical(uint64_t* pml4, paging_page_table_pool_t* page_ta
 		return EFI_OUT_OF_RESOURCES;
 	}
 
-	uint64_t* pdpt;
+	/* NOTE : We used to use 1GiB pages for identity mapping but they aren't supported on "older" CPUs
+	 *        (see `pdpe1gb` flag in `/proc/cpuinfo` on Linux).
+	 *        2MiB pages are more expensive in terms of memory usage but they should be compatible with
+	 *        every processor with 4-level paging support.
+	 */
+
+	uint64_t *pdpt, *pds;
 	RETURN_EFI(paging_allocate_page(&pdpt, 1, page_table_pool));
+	RETURN_EFI(paging_allocate_page(&pds, PAGE_TABLE_ENTRIES, page_table_pool));
 	pml4[LINEAR_ADDRESS_GET_PML4(0x0000000000000000)] = PML4E_PRESENT | PML4E_READ_WRITE | ((uintptr_t)pdpt & PML4E_PHYSICAL_ADDRESS_PDPT);
 	pml4[LINEAR_ADDRESS_GET_PML4(RKHV_PHYSICAL_MEMORY_BASE)] = PML4E_PRESENT | PML4E_READ_WRITE | ((uintptr_t)pdpt & PML4E_PHYSICAL_ADDRESS_PDPT);
 
-	for (size_t page_index = 0; page_index < EFI_PAGE_SIZE / sizeof(uint64_t); page_index++) {
-		pdpt[page_index] = PDPTE_PRESENT | PDPTE_READ_WRITE | PDPTE_PAGE_SIZE |
-				   ((page_index << LINEAR_ADDRESS_DP_SHIFT) & PDPTE_PHYSICAL_ADDRESS_PAGE);
+	for (size_t pdpt_index = 0; pdpt_index < PAGE_TABLE_ENTRIES; pdpt_index++) {
+		size_t pd_base = pdpt_index * PAGE_TABLE_ENTRIES;
+		pdpt[pdpt_index] = PDPTE_PRESENT | PDPTE_READ_WRITE | ((uintptr_t)&pds[pd_base] & PDPTE_PHYSICAL_ADDRESS_PD);
+		for (size_t pd_index = 0; pd_index < PAGE_TABLE_ENTRIES; pd_index++) {
+			pds[pd_base + pd_index] = PDE_PRESENT | PDE_READ_WRITE | PDE_PAGE_SIZE |
+						  (((pd_base + pd_index) << LINEAR_ADDRESS_D_SHIFT) & PDE_PHYSICAL_ADDRESS_PAGE);
+		}
 	}
 
 	return EFI_SUCCESS;

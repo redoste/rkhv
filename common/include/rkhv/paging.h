@@ -1,8 +1,9 @@
 #ifndef COMMON_RKHV_PAGING_H
 #define COMMON_RKHV_PAGING_H
 
-#define PAGE_SIZE 0x1000
-#define PAGE_MASK (~0xfff)
+#define PAGE_SIZE          0x1000
+#define PAGE_MASK          (~0xfff)
+#define PAGE_TABLE_ENTRIES (PAGE_SIZE / sizeof(uint64_t))
 
 #define LINEAR_ADDRESS_PML4_MASK   0x0000ff8000000000
 #define LINEAR_ADDRESS_DP_MASK     0x0000007fc0000000
