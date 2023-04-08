@@ -109,15 +109,16 @@ void mm_setup(chainload_page_t* chainload_page) {
 
 	size_t usable_pages = 0;
 	for (size_t i = 0; i < sizeof(chainload_page->efi_mmap_usable) / sizeof(chainload_page->efi_mmap_usable[0]); i++) {
-		if (chainload_page->efi_mmap_usable[i].pages == 0) {
+		chainload_mmap_desc_t *iter = &mm_chainload_page->efi_mmap_usable[i];
+		if (iter->pages == 0) {
 			break;
-		} else if (chainload_page->efi_mmap_usable[i].usable) {
-			usable_pages += chainload_page->efi_mmap_usable[i].pages;
+		} else if (iter->usable) {
+			usable_pages += iter->pages;
 		}
 		LOG("EFI MMAP @ %p (%zxpq pages) : %s",
-		    (void*)chainload_page->efi_mmap_usable[i].physical_address,
-		    chainload_page->efi_mmap_usable[i].pages,
-		    chainload_page->efi_mmap_usable[i].usable ? "usable" : "reserved");
+		    (void*)iter->physical_address,
+		    iter->pages,
+		    iter->usable ? "usable" : "reserved");
 	}
 	LOG("Total usable memory : %zu B / %zu KiB / %zu MiB",
 	    usable_pages * PAGE_SIZE,
