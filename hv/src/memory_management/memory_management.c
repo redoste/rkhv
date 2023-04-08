@@ -29,9 +29,14 @@ static bool mm_page_used_by_chainload(uintptr_t page_physical_address) {
 		}
 	}
 
-	for (size_t page_table_pages_index = 0; page_table_pages_index < mm_chainload_page->page_table_pages.len; page_table_pages_index++) {
-		if (mm_chainload_page->page_table_pages.physical_addresses[page_table_pages_index] == page_physical_address) {
-			return true;
+	for (size_t region_index = 0; region_index < RKHV_MAX_PAGE_TABLE_REGIONS; region_index++) {
+		chainload_page_table_region_t* iter = &mm_chainload_page->page_table_regions[region_index];
+		if (iter->pages > 0) {
+			uintptr_t region_first_page = iter->physical_address;
+			uintptr_t region_last_page = region_first_page + ((iter->pages - 1) * PAGE_SIZE);
+			if (page_physical_address >= region_first_page && page_physical_address <= region_last_page) {
+				return true;
+			}
 		}
 	}
 
@@ -111,7 +116,7 @@ void mm_setup(chainload_page_t* chainload_page) {
 
 	size_t usable_pages = 0;
 	for (size_t i = 0; i < sizeof(chainload_page->efi_mmap_usable) / sizeof(chainload_page->efi_mmap_usable[0]); i++) {
-		chainload_mmap_desc_t *iter = &mm_chainload_page->efi_mmap_usable[i];
+		chainload_mmap_desc_t* iter = &mm_chainload_page->efi_mmap_usable[i];
 		if (iter->pages == 0) {
 			break;
 		} else if (iter->usable) {
@@ -126,4 +131,12 @@ void mm_setup(chainload_page_t* chainload_page) {
 	    usable_pages * PAGE_SIZE,
 	    (usable_pages * PAGE_SIZE) / 1024,
 	    (usable_pages * PAGE_SIZE) / 1024 / 1024);
+
+	for (size_t i = 0; i < sizeof(chainload_page->page_table_regions) / sizeof(chainload_page->page_table_regions[0]); i++) {
+		chainload_page_table_region_t* iter = &mm_chainload_page->page_table_regions[i];
+		if (iter->pages == 0) {
+			break;
+		}
+		LOG("Page Table Region @ %p (%zu pages)", (void*)iter->physical_address, iter->pages);
+	}
 }

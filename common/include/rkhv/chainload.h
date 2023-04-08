@@ -9,8 +9,8 @@
 #include <rkhv/stdint.h>
 
 #define RKHV_MAX_SECTIONS             4
-#define RKHV_MAX_PAGE_TABLE_PAGES     16
-#define RKHV_MAX_EFI_MMAP_DESCRIPTORS 243
+#define RKHV_MAX_PAGE_TABLE_REGIONS   16
+#define RKHV_MAX_EFI_MMAP_DESCRIPTORS 235
 
 typedef struct __attribute__((packed)) chainload_mmap_desc_t {
 	uintptr_t physical_address;
@@ -21,6 +21,11 @@ typedef struct __attribute__((packed)) chainload_mmap_desc_t {
 	size_t usable : 1;
 } chainload_mmap_desc_t;
 
+typedef struct __attribute__((packed)) chainload_page_table_region_t {
+	uintptr_t physical_address;
+	size_t pages;
+} chainload_page_table_region_t;
+
 typedef struct __attribute__((packed)) chainload_page_t {
 	struct {
 		uintptr_t physical_address;
@@ -29,10 +34,8 @@ typedef struct __attribute__((packed)) chainload_page_t {
 	struct {
 		uintptr_t physical_address;
 	} chainload_page;
-	struct {
-		uintptr_t physical_addresses[RKHV_MAX_PAGE_TABLE_PAGES];
-		size_t len;
-	} page_table_pages;
+	uintptr_t _pad;
+	chainload_page_table_region_t page_table_regions[RKHV_MAX_PAGE_TABLE_REGIONS];
 	chainload_mmap_desc_t efi_mmap_usable[RKHV_MAX_EFI_MMAP_DESCRIPTORS];
 } chainload_page_t;
 

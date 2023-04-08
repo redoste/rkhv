@@ -26,20 +26,44 @@ bool paging_check_for_supported_level(void) {
 	       (ia32_efer & (1 << 8));  // LME  : Long Mode Enable
 }
 
-static EFI_STATUS paging_allocate_page(uint64_t** page, paging_page_table_pool_t* page_table_pool) {
-	if (page_table_pool->size >= page_table_pool->capacity) {
-		return EFI_BUFFER_TOO_SMALL;
+static EFI_STATUS paging_allocate_page(uint64_t** pages_out, size_t pages_count, paging_page_table_pool_t* page_table_pool) {
+	EFI_PHYSICAL_ADDRESS pages_physical_address;
+	RETURN_EFI(EFI_ST->BootServices->AllocatePages(AllocateAnyPages,
+						       EfiLoaderData,
+						       pages_count,
+						       &pages_physical_address));
+
+	// NOTE : This "region collapser" will fragment really easily, let's hope the EFI is nice when allocating pages
+	bool collaped_with_existing_region = false;
+	for (size_t i = 0; i < page_table_pool->size; i++) {
+		chainload_page_table_region_t* iter = &page_table_pool->pool[i];
+		if (pages_physical_address + (EFI_PAGE_SIZE * pages_count) == iter->physical_address) {
+			iter->physical_address = pages_physical_address;
+			iter->pages += pages_count;
+			collaped_with_existing_region = true;
+			break;
+		} else if (pages_physical_address == iter->physical_address + (EFI_PAGE_SIZE * iter->pages)) {
+			iter->pages += pages_count;
+			collaped_with_existing_region = true;
+			break;
+		}
+	}
+	if (!collaped_with_existing_region) {
+		if (page_table_pool->size >= page_table_pool->capacity) {
+			return EFI_BUFFER_TOO_SMALL;
+		}
+		size_t new_index = page_table_pool->size++;
+		page_table_pool->pool[new_index].physical_address = pages_physical_address;
+		page_table_pool->pool[new_index].pages = pages_count;
 	}
 
-	RETURN_EFI(
-		EFI_ST->BootServices->AllocatePages(AllocateAnyPages, EfiLoaderData, 1, (EFI_PHYSICAL_ADDRESS*)page));
-	page_table_pool->pool[page_table_pool->size++] = *page;
-	memset(*page, 0, EFI_PAGE_SIZE);
+	*pages_out = (void*)pages_physical_address;
+	memset(*pages_out, 0, EFI_PAGE_SIZE * pages_count);
 	return EFI_SUCCESS;
 }
 
 EFI_STATUS paging_allocate_pml4(uint64_t** pml4, paging_page_table_pool_t* page_table_pool) {
-	return paging_allocate_page(pml4, page_table_pool);
+	return paging_allocate_page(pml4, 1, page_table_pool);
 }
 
 EFI_STATUS paging_map_page(uint64_t* pml4,
@@ -56,7 +80,7 @@ EFI_STATUS paging_map_page(uint64_t* pml4,
 	if (pml4[pml4_index] & PML4E_PRESENT) {
 		pdpt = (uint64_t*)(pml4[pml4_index] & PML4E_PHYSICAL_ADDRESS_PDPT);
 	} else {
-		RETURN_EFI(paging_allocate_page(&pdpt, page_table_pool));
+		RETURN_EFI(paging_allocate_page(&pdpt, 1, page_table_pool));
 		pml4[pml4_index] = PML4E_PRESENT | PML4E_READ_WRITE | ((uintptr_t)pdpt & PML4E_PHYSICAL_ADDRESS_PDPT);
 	}
 
@@ -70,7 +94,7 @@ EFI_STATUS paging_map_page(uint64_t* pml4,
 		}
 		pd = (uint64_t*)(pdpt[pdpt_index] & PDPTE_PHYSICAL_ADDRESS_PD);
 	} else {
-		RETURN_EFI(paging_allocate_page(&pd, page_table_pool));
+		RETURN_EFI(paging_allocate_page(&pd, 1, page_table_pool));
 		pdpt[pdpt_index] = PDPTE_PRESENT | PDPTE_READ_WRITE | ((uintptr_t)pd & PDPTE_PHYSICAL_ADDRESS_PD);
 	}
 
@@ -81,7 +105,7 @@ EFI_STATUS paging_map_page(uint64_t* pml4,
 		}
 		pt = (uint64_t*)(pd[pd_index] & PDE_PHYSICAL_ADDRESS_PT);
 	} else {
-		RETURN_EFI(paging_allocate_page(&pt, page_table_pool));
+		RETURN_EFI(paging_allocate_page(&pt, 1, page_table_pool));
 		pd[pd_index] = PDE_PRESENT | PDE_READ_WRITE | ((uintptr_t)pt & PDE_PHYSICAL_ADDRESS_PT);
 	}
 
@@ -107,7 +131,7 @@ EFI_STATUS paging_map_physical(uint64_t* pml4, paging_page_table_pool_t* page_ta
 	}
 
 	uint64_t* pdpt;
-	RETURN_EFI(paging_allocate_page(&pdpt, page_table_pool));
+	RETURN_EFI(paging_allocate_page(&pdpt, 1, page_table_pool));
 	pml4[LINEAR_ADDRESS_GET_PML4(0x0000000000000000)] = PML4E_PRESENT | PML4E_READ_WRITE | ((uintptr_t)pdpt & PML4E_PHYSICAL_ADDRESS_PDPT);
 	pml4[LINEAR_ADDRESS_GET_PML4(RKHV_PHYSICAL_MEMORY_BASE)] = PML4E_PRESENT | PML4E_READ_WRITE | ((uintptr_t)pdpt & PML4E_PHYSICAL_ADDRESS_PDPT);
 

@@ -4,10 +4,12 @@
 #include <efi.h>
 #include <stdbool.h>
 
+#include <rkhv/chainload.h>
+
 typedef struct paging_page_table_pool_t {
 	size_t size;
 	size_t capacity;
-	uint64_t** pool;
+	chainload_page_table_region_t* pool;
 } paging_page_table_pool_t;
 
 typedef enum paging_permission_t {

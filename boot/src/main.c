@@ -78,11 +78,10 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_table) {
 	}
 	VERIFY_EFI(volume->Close(volume));
 
-	uint64_t* pool[PAGE_TABLE_POOL_DEFAULT_CAPACITY];
 	paging_page_table_pool_t page_table_pool = {
 		.size = 0,
 		.capacity = PAGE_TABLE_POOL_DEFAULT_CAPACITY,
-		.pool = pool,
+		.pool = chainload_page->page_table_regions,
 	};
 
 	uint64_t* pml4;
@@ -105,10 +104,6 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_table) {
 
 	VERIFY_EFI(stdio_puts(u"Building page table identity mapping for physical memory\r\n"));
 	VERIFY_EFI(paging_map_physical(pml4, &page_table_pool));
-
-	memcpy(chainload_page->page_table_pages.physical_addresses, page_table_pool.pool,
-	       page_table_pool.size * sizeof(uintptr_t));
-	chainload_page->page_table_pages.len = page_table_pool.size;
 
 	if (!paging_check_for_supported_level()) {
 		VERIFY_EFI(stdio_puts(u"Invalid paging setup by firmware, only Level-4 paging is supported\r\n"));
