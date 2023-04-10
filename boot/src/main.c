@@ -1,12 +1,13 @@
 #include <efi.h>
 
 #include <rkhv/chainload.h>
+#define COMMON_MEM_IMPLEMENTATION
+#include <rkhv/mem.h>
 #include <rkhv/memory_map.h>
 
 #include "chainload.h"
 #include "fs.h"
 #include "main.h"
-#include "mem.h"
 #include "paging.h"
 #include "stdio.h"
 #include "string.h"

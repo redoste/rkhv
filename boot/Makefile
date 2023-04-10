@@ -12,7 +12,6 @@ BOOT_AFLAGS?=-f win64 $(AFLAGS_WARNS)
 
 SRCS_C:=src/main.c\
         src/fs.c\
-        src/mem.c\
         src/paging.c\
         src/stdio.c\
         src/string.c

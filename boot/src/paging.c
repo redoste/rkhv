@@ -2,11 +2,11 @@
 #include <stdbool.h>
 
 #include <rkhv/cr_msr.h>
+#include <rkhv/mem.h>
 #include <rkhv/memory_map.h>
 #include <rkhv/paging.h>
 
 #include "main.h"
-#include "mem.h"
 #include "paging.h"
 
 bool paging_check_for_supported_level(void) {
