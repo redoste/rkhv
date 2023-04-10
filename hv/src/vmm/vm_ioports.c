@@ -7,7 +7,7 @@
 
 #include "vm_ioports.h"
 
-static void vmx_com1_write(uint8_t read_byte) {
+static void vm_com1_write(uint8_t read_byte) {
 	static char vm_serial_buffer[128];
 	static size_t vm_serial_buffer_size = 0;
 
@@ -26,21 +26,21 @@ static void vmx_com1_write(uint8_t read_byte) {
 	}
 }
 
-void vmx_outb(uint16_t port, uint8_t value) {
+void vm_outb(uint16_t port, uint8_t value) {
 	if (port != COM1_DATA_REG) {
 		LOG("outb port=%xpw value=%xpb", port, value);
 		PANIC("unsupported I/O port");
 	}
 
-	vmx_com1_write(value);
+	vm_com1_write(value);
 }
 
-void vmx_outw(uint16_t port, uint16_t value) {
+void vm_outw(uint16_t port, uint16_t value) {
 	LOG("outw port=%xpw value=%xpw", port, value);
 	PANIC("unsupported I/O port");
 }
 
-void vmx_outd(uint16_t port, uint32_t value) {
+void vm_outd(uint16_t port, uint32_t value) {
 	LOG("outd port=%xpw value=%xpd", port, value);
 	PANIC("unsupported I/O port");
 }

@@ -23,19 +23,19 @@ static void vmx_vmexit_io(uint64_t exit_qualification, vmx_vmexit_state_t* vm_st
 	static const emulated_io_instruction_t emulated_io_instructions[2][4][3] = {
 		[VMEXIT_QUALIFICATION_IO_DIRECTION_OUT] = {
 			[VMEXIT_QUALIFICATION_IO_SIZE_BYTE] = {
-				[EMULATED_INSTRUCTION_SINGLE] = vmx_emulated_instruction_outb,
-				[EMULATED_INSTRUCTION_STR] = vmx_emulated_instruction_outsb,
-				[EMULATED_INSTRUCTION_STRREP] = vmx_emulated_instruction_rep_outsb,
+				[EMULATED_INSTRUCTION_SINGLE] = vm_emulated_instruction_outb,
+				[EMULATED_INSTRUCTION_STR] = vm_emulated_instruction_outsb,
+				[EMULATED_INSTRUCTION_STRREP] = vm_emulated_instruction_rep_outsb,
 			},
 			[VMEXIT_QUALIFICATION_IO_SIZE_WORD] = {
-				[EMULATED_INSTRUCTION_SINGLE] = vmx_emulated_instruction_outw,
-				[EMULATED_INSTRUCTION_STR] = vmx_emulated_instruction_outsw,
-				[EMULATED_INSTRUCTION_STRREP] = vmx_emulated_instruction_rep_outsw,
+				[EMULATED_INSTRUCTION_SINGLE] = vm_emulated_instruction_outw,
+				[EMULATED_INSTRUCTION_STR] = vm_emulated_instruction_outsw,
+				[EMULATED_INSTRUCTION_STRREP] = vm_emulated_instruction_rep_outsw,
 			},
 			[VMEXIT_QUALIFICATION_IO_SIZE_DWORD] = {
-				[EMULATED_INSTRUCTION_SINGLE] = vmx_emulated_instruction_outd,
-				[EMULATED_INSTRUCTION_STR] = vmx_emulated_instruction_outsd,
-				[EMULATED_INSTRUCTION_STRREP] = vmx_emulated_instruction_rep_outsd,
+				[EMULATED_INSTRUCTION_SINGLE] = vm_emulated_instruction_outd,
+				[EMULATED_INSTRUCTION_STR] = vm_emulated_instruction_outsd,
+				[EMULATED_INSTRUCTION_STRREP] = vm_emulated_instruction_rep_outsd,
 			},
 		},
 		[VMEXIT_QUALIFICATION_IO_DIRECTION_IN] = {
