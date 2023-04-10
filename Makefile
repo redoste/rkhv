@@ -1,7 +1,6 @@
 include common/Makefile
 
 SUB_DIRS:=boot hv
-FORMATTED_DIRS:=$(SUB_DIRS) common
 
 .PHONY: all
 all: $(SUB_DIRS)
@@ -30,4 +29,4 @@ clean:
 
 .PHONY: format
 format:
-	find $(FORMATTED_DIRS) -iname *.h -o -iname *.c | xargs clang-format -i
+	git ls-files '*.c' '*.h' | xargs clang-format -i
