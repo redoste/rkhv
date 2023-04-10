@@ -2,6 +2,7 @@
 #include <stddef.h>
 
 #include <rkhv/cr_msr.h>
+#include <rkhv/mem.h>
 #include <rkhv/memory_map.h>
 #include <rkhv/stdint.h>
 
@@ -74,6 +75,8 @@ uint64_t* vmx_allocate_ept_page(void) {
 
 	uintptr_t ept_page = mm_get_free_page();
 	ept_pages[ept_pages_size++] = ept_page;
+
+	memset(P2V_IDENTITY_MAP(ept_page), 0, PAGE_SIZE);
 
 	return P2V_IDENTITY_MAP(ept_page);
 }

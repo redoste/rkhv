@@ -1,4 +1,6 @@
 #include <rkhv/chainload.h>
+#define COMMON_MEM_IMPLEMENTATION
+#include <rkhv/mem.h>
 
 #define LOG_CATEGORY "main"
 #include <rkhv/panic.h>
