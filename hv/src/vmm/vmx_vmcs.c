@@ -10,6 +10,7 @@
 #include <rkhv/stdio.h>
 #include <rkhv/vmm/vmx_pages.h>
 
+#include "vm_manager.h"
 #include "vmx_instructions.h"
 #include "vmx_vmcs.h"
 #include "vmx_vmexit.h"
@@ -36,21 +37,31 @@ static inline uint32_t vmx_read_segment_access_right_from_gdt(uint16_t segment_s
 	return ((segment_descriptor->flags & 0xf0) << 8) | segment_descriptor->access;
 }
 
-extern void vm_guest_hello_world(void);
+void vmx_create_initialized_vmcs(vm_t* vm) {
+	if (vm->flags & VM_T_FLAG_VMCS_INITIALIZED) {
+		PANIC("Trying to reinitialize an already initialized VMCS");
+	}
 
-uintptr_t vmx_create_initialized_vmcs(uintptr_t eptp) {
-	uintptr_t vmcs_region = vmx_get_new_vmcs_region();
+	vm->vmcs_region = vmx_get_new_vmcs_region();
+	VMX_ASSERT(vmx_vmclear(vm->vmcs_region));
+	VMX_ASSERT(vmx_vmptrld(vm->vmcs_region));
 
-	VMX_ASSERT(vmx_vmclear(vmcs_region));
-	VMX_ASSERT(vmx_vmptrld(vmcs_region));
+	idtr_t host_idtr;
+	interrupts_sidt(&host_idtr);
 
-	idtr_t idtr;
-	interrupts_sidt(&idtr);
+	gdtr_t host_gdtr;
+	segments_sgdt(&host_gdtr);
 
-	gdtr_t gdtr;
-	segments_sgdt(&gdtr);
-	uint32_t ds_access_right = vmx_read_segment_access_right_from_gdt(RKHV_DS, gdtr.offset);
-	uint32_t cs_access_right = vmx_read_segment_access_right_from_gdt(RKHV_CS, gdtr.offset);
+	const vmx_initial_vmcs_config_t* config = &vm->vmcs_config;
+
+	/* TODO : translate gdtr offset from guest virtual to host virtual
+	 *        or maybe we should always read the segments access rights from
+	 *        the host GDT
+	 */
+	uint32_t guest_ds_access_right = vmx_read_segment_access_right_from_gdt(config->guest_state.ds,
+										config->guest_state.gdtr.offset);
+	uint32_t guest_cs_access_right = vmx_read_segment_access_right_from_gdt(config->guest_state.cs,
+										config->guest_state.gdtr.offset);
 
 	struct {
 		uint64_t field_encoding;
@@ -73,7 +84,7 @@ uintptr_t vmx_create_initialized_vmcs(uintptr_t eptp) {
 
 		{
 			VMCS_CF_EPT_POINTER,
-			(eptp & VMCS_CF_EPTP_PHYSICAL_ADDRESS_PML4) |
+			(config->eptp & VMCS_CF_EPTP_PHYSICAL_ADDRESS_PML4) |
 				VMCS_CF_EPTP_PAGE_WALK_LENGTH_4 |
 				VMCS_CF_EPTP_WRITE_BACK,
 			0,
@@ -112,8 +123,8 @@ uintptr_t vmx_create_initialized_vmcs(uintptr_t eptp) {
 		{VMCS_HOST_CR3, cr3_read(), 0},
 		{VMCS_HOST_CR4, cr4_read(), 0},
 
-		{VMCS_HOST_GDTR_BASE, (uintptr_t)gdtr.offset, 0},
-		{VMCS_HOST_IDTR_BASE, (uintptr_t)idtr.offset, 0},
+		{VMCS_HOST_GDTR_BASE, (uintptr_t)host_gdtr.offset, 0},
+		{VMCS_HOST_IDTR_BASE, (uintptr_t)host_idtr.offset, 0},
 
 		{VMCS_HOST_RSP, RKHV_STACK_TOP, 0},
 		{VMCS_HOST_RIP, (uintptr_t)&vmx_vmexit, 0},
@@ -122,12 +133,12 @@ uintptr_t vmx_create_initialized_vmcs(uintptr_t eptp) {
 		{VMCS_HOST_IA32_SYSENTER_EIP, 0, 0},
 
 		/* === Guest State === */
-		{VMCS_GUEST_ES, RKHV_DS, 0},
-		{VMCS_GUEST_CS, RKHV_CS, 0},
-		{VMCS_GUEST_SS, RKHV_DS, 0},
-		{VMCS_GUEST_DS, RKHV_DS, 0},
-		{VMCS_GUEST_FS, RKHV_DS, 0},
-		{VMCS_GUEST_GS, RKHV_DS, 0},
+		{VMCS_GUEST_ES, config->guest_state.ds, 0},
+		{VMCS_GUEST_CS, config->guest_state.cs, 0},
+		{VMCS_GUEST_SS, config->guest_state.ds, 0},
+		{VMCS_GUEST_DS, config->guest_state.ds, 0},
+		{VMCS_GUEST_FS, config->guest_state.ds, 0},
+		{VMCS_GUEST_GS, config->guest_state.ds, 0},
 		{VMCS_GUEST_TR, 0, 0},
 		{VMCS_GUEST_LDTR, 0, 0},
 
@@ -149,12 +160,12 @@ uintptr_t vmx_create_initialized_vmcs(uintptr_t eptp) {
 		{VMCS_GUEST_LDTR_LIMIT, 0, 0},
 		{VMCS_GUEST_TR_LIMIT, 0, 0},
 
-		{VMCS_GUEST_ES_ACCESS_RIGHTS, ds_access_right, 0},
-		{VMCS_GUEST_CS_ACCESS_RIGHTS, cs_access_right, 0},
-		{VMCS_GUEST_SS_ACCESS_RIGHTS, ds_access_right, 0},
-		{VMCS_GUEST_DS_ACCESS_RIGHTS, ds_access_right, 0},
-		{VMCS_GUEST_FS_ACCESS_RIGHTS, ds_access_right, 0},
-		{VMCS_GUEST_GS_ACCESS_RIGHTS, ds_access_right, 0},
+		{VMCS_GUEST_ES_ACCESS_RIGHTS, guest_ds_access_right, 0},
+		{VMCS_GUEST_CS_ACCESS_RIGHTS, guest_cs_access_right, 0},
+		{VMCS_GUEST_SS_ACCESS_RIGHTS, guest_ds_access_right, 0},
+		{VMCS_GUEST_DS_ACCESS_RIGHTS, guest_ds_access_right, 0},
+		{VMCS_GUEST_FS_ACCESS_RIGHTS, guest_ds_access_right, 0},
+		{VMCS_GUEST_GS_ACCESS_RIGHTS, guest_ds_access_right, 0},
 		{VMCS_GUEST_LDTR_ACCESS_RIGHTS, VMCS_UNUSABLE_SEGMENT, 0},
 		{
 			VMCS_GUEST_TR_ACCESS_RIGHTS,
@@ -164,17 +175,17 @@ uintptr_t vmx_create_initialized_vmcs(uintptr_t eptp) {
 			0,
 		},
 
-		{VMCS_GUEST_CR0, cr0_read(), 0},
-		{VMCS_GUEST_CR3, cr3_read(), 0},
-		{VMCS_GUEST_CR4, cr4_read(), 0},
+		{VMCS_GUEST_CR0, config->guest_state.cr0, 0},
+		{VMCS_GUEST_CR3, config->guest_state.cr3, 0},
+		{VMCS_GUEST_CR4, config->guest_state.cr4, 0},
 
-		{VMCS_GUEST_GDTR_BASE, (uintptr_t)gdtr.offset, 0},
-		{VMCS_GUEST_GDTR_LIMIT, (uintptr_t)gdtr.size, 0},
-		{VMCS_GUEST_IDTR_BASE, (uintptr_t)idtr.offset, 0},
-		{VMCS_GUEST_IDTR_LIMIT, (uintptr_t)idtr.size, 0},
+		{VMCS_GUEST_GDTR_BASE, (uintptr_t)config->guest_state.gdtr.offset, 0},
+		{VMCS_GUEST_GDTR_LIMIT, (uintptr_t)config->guest_state.gdtr.size, 0},
+		{VMCS_GUEST_IDTR_BASE, (uintptr_t)config->guest_state.idtr.offset, 0},
+		{VMCS_GUEST_IDTR_LIMIT, (uintptr_t)config->guest_state.idtr.size, 0},
 
-		{VMCS_GUEST_RSP, 0, 0},  // TODO : allocate a stack for the guest
-		{VMCS_GUEST_RIP, (uintptr_t)&vm_guest_hello_world, 0},
+		{VMCS_GUEST_RSP, config->guest_state.rsp, 0},
+		{VMCS_GUEST_RIP, config->guest_state.rip, 0},
 		{VMCS_GUEST_RFLAGS, RFLAGS_RESERVED, 0},
 
 		{VMCS_GUEST_IA32_SYSENTER_ESP, 0, 0},
@@ -200,5 +211,5 @@ uintptr_t vmx_create_initialized_vmcs(uintptr_t eptp) {
 		VMX_ASSERT(vmx_vmwrite(field_encoding, value));
 	}
 
-	return vmcs_region;
+	vm->flags |= VM_T_FLAG_VMCS_INITIALIZED;
 }

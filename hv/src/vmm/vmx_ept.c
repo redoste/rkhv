@@ -3,9 +3,10 @@
 
 #include <rkhv/vmm/vmx_pages.h>
 
+#include "vm_manager.h"
 #include "vmx_ept.h"
 
-uintptr_t vmx_ept_create_identity_mapping(void) {
+void vmx_ept_create_identity_mapping(vm_t* vm) {
 	uint64_t* ept_pdpt = vmx_allocate_ept_page();
 	for (size_t i = 0; i < PAGE_TABLE_ENTRIES; i++) {
 		ept_pdpt[i] = EPT_PDPTE_READ | EPT_PDPTE_WRITE | EPT_PDPTE_EXECUTE | EPT_PDPTE_PAGE_SIZE |
@@ -16,5 +17,5 @@ uintptr_t vmx_ept_create_identity_mapping(void) {
 	ept_pml4[0] = EPT_PML4E_READ | EPT_PML4E_WRITE | EPT_PML4E_EXECUTE |
 		      (V2P_IDENTITY_MAP(ept_pdpt) & EPT_PML4E_PHYSICAL_ADDRESS_PDPT);
 
-	return V2P_IDENTITY_MAP(ept_pml4);
+	vm->vmcs_config.eptp = V2P_IDENTITY_MAP(ept_pml4);
 }

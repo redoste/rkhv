@@ -3,6 +3,9 @@
 
 #include <rkhv/stdint.h>
 
+#include <rkhv/interrupts.h>
+#include <rkhv/segments.h>
+
 #define VMCS_CF_VPID                                                  0x00000000
 #define VMCS_CF_POSTED_INTERRUPT_NOTIFICATION_VECTOR                  0x00000002
 #define VMCS_CF_EPTP_INDEX                                            0x00000004
@@ -182,6 +185,25 @@
 #define VMCS_VM_EXIT_INSTRUCTION_LENGTH 0x0000440C
 #define VMCS_EXIT_QUALIFICATION         0x00006400
 
-uintptr_t vmx_create_initialized_vmcs(uintptr_t eptp);
+typedef struct vmx_initial_vmcs_config_t {
+	uintptr_t eptp;
+	struct {
+		uintptr_t rip;
+		uintptr_t rsp;
+		uintptr_t cr0;
+		uintptr_t cr3;
+		uintptr_t cr4;
+		uint16_t cs;
+		uint16_t ds;
+		gdtr_t gdtr;
+		idtr_t idtr;
+	} guest_state;
+} vmx_initial_vmcs_config_t;
+
+typedef struct vm_t vm_t; /* Forward declaration from `vm_manager.h` due to cyclic
+			   * dependency with `vmx_initial_vmcs_config_t`
+			   */
+
+void vmx_create_initialized_vmcs(vm_t* vm);
 
 #endif

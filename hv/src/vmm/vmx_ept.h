@@ -4,6 +4,8 @@
 #include <rkhv/paging.h>
 #include <rkhv/stdint.h>
 
+#include "vm_manager.h"
+
 #define GUEST_PHYSICAL_ADDRESS_PML4_MASK   LINEAR_ADDRESS_PML4_MASK
 #define GUEST_PHYSICAL_ADDRESS_DP_MASK     LINEAR_ADDRESS_DP_MASK
 #define GUEST_PHYSICAL_ADDRESS_D_MASK      LINEAR_ADDRESS_D_MASK
@@ -89,6 +91,6 @@
 #define EPT_PTE_SUBPAGE_WRITE_PERMISSIONS 0x2000000000000000
 #define EPT_PTE_SUPPRESS_VE               0x8000000000000000
 
-uintptr_t vmx_ept_create_identity_mapping(void);
+void vmx_ept_create_identity_mapping(vm_t* vm);
 
 #endif
