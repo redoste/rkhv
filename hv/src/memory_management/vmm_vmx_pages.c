@@ -14,18 +14,9 @@
 
 static uintptr_t vmxon_region = (uintptr_t)NULL;
 
-static uintptr_t ept_pages[VMX_MAX_EPT_PAGES];
-static size_t ept_pages_size = 0;
-
 bool mm_page_used_by_vmx(uintptr_t page_physical_address) {
 	if (page_physical_address == vmxon_region) {
 		return true;
-	}
-
-	for (size_t i = 0; i < ept_pages_size; i++) {
-		if (page_physical_address == ept_pages[i]) {
-			return true;
-		}
 	}
 
 	return false;
@@ -54,15 +45,10 @@ uintptr_t vmx_get_free_vmcs_region(void) {
 	return vmcs_region;
 }
 
-uint64_t* vmx_allocate_ept_page(void) {
-	if (ept_pages_size >= VMX_MAX_EPT_PAGES) {
-		PANIC("Maximum EPT pages exceeded");
-	}
-
+uint64_t* vmx_get_free_ept_page(void) {
 	uintptr_t ept_page = mm_get_free_page();
-	ept_pages[ept_pages_size++] = ept_page;
+	uint64_t* ept_page_va = P2V_IDENTITY_MAP(ept_page);
+	memset(ept_page_va, 0, PAGE_SIZE);
 
-	memset(P2V_IDENTITY_MAP(ept_page), 0, PAGE_SIZE);
-
-	return P2V_IDENTITY_MAP(ept_page);
+	return ept_page_va;
 }
