@@ -8,9 +8,10 @@
 #include <rkhv/panic.h>
 #include <rkhv/segments.h>
 #include <rkhv/stdio.h>
+#include <rkhv/vmm/vm_manager.h>
 #include <rkhv/vmm/vmx_pages.h>
+#include <rkhv/vmm/vmx_vmcs.h>
 
-#include "vm_manager.h"
 #include "vmx_instructions.h"
 #include "vmx_vmcs.h"
 #include "vmx_vmexit.h"

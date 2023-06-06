@@ -13,6 +13,7 @@ SRCS_C:=src/main.c\
         src/interrupts.c\
         src/memory_management/arena.c\
         src/memory_management/memory_management.c\
+        src/memory_management/vmm_vm_manager.c\
         src/memory_management/vmm_vmx_pages.c\
         src/panic.c\
         src/segments.c\

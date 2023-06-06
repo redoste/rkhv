@@ -1,9 +1,9 @@
 #include <rkhv/memory_map.h>
 #include <rkhv/stdint.h>
 
+#include <rkhv/vmm/vm_manager.h>
 #include <rkhv/vmm/vmx_pages.h>
 
-#include "vm_manager.h"
 #include "vmx_ept.h"
 
 void vmx_ept_create_identity_mapping(vm_t* vm) {

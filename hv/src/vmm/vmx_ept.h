@@ -4,7 +4,7 @@
 #include <rkhv/paging.h>
 #include <rkhv/stdint.h>
 
-#include "vm_manager.h"
+#include <rkhv/vmm/vm_manager.h>
 
 #define GUEST_PHYSICAL_ADDRESS_PML4_MASK   LINEAR_ADDRESS_PML4_MASK
 #define GUEST_PHYSICAL_ADDRESS_DP_MASK     LINEAR_ADDRESS_DP_MASK

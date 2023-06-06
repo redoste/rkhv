@@ -11,7 +11,7 @@
 #include "vmx_instructions.h"
 
 static arena_t* vm_manager_arena = NULL;
-static vm_t* vm_manager_vm_list = NULL;
+vm_t* vm_manager_vm_list = NULL;
 
 vm_t* vm_manager_create_vmx_machine(const char* name) {
 	if (!vm_manager_arena) {
