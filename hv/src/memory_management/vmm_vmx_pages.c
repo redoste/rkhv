@@ -46,7 +46,7 @@ uintptr_t vmx_get_vmxon_region(void) {
 	return vmxon_region;
 }
 
-uintptr_t vmx_get_new_vmcs_region(void) {
+uintptr_t vmx_get_free_vmcs_region(void) {
 	uintptr_t vmcs_region = mm_get_free_page();
 	uint32_t* vmcs_region_va = P2V_IDENTITY_MAP(vmcs_region);
 	*vmcs_region_va = vmx_get_vmcs_revision_identifier();

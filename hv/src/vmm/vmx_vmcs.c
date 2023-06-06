@@ -43,7 +43,7 @@ void vmx_create_initialized_vmcs(vm_t* vm) {
 		PANIC("Trying to reinitialize an already initialized VMCS");
 	}
 
-	vm->vmcs_region = vmx_get_new_vmcs_region();
+	vm->vmcs_region = vmx_get_free_vmcs_region();
 	VMX_ASSERT(vmx_vmclear(vm->vmcs_region));
 	VMX_ASSERT(vmx_vmptrld(vm->vmcs_region));
 
