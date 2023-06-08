@@ -9,7 +9,7 @@
 
 #define VM_EMULATED_INSTRUCTION_IO_SINGLE(direction, size)                                            \
 	void vm_emulated_instruction_##direction##size(vmx_vmexit_state_t* vm_state, uint16_t port) { \
-		vm_##direction##size(port, vm_state->reg_state->rax);                                 \
+		vm_##direction##size(vm_state->vm, port, vm_state->reg_state->rax);                   \
 	}
 
 VM_EMULATED_INSTRUCTION_IO_SINGLE(out, b)
@@ -21,7 +21,7 @@ VM_EMULATED_INSTRUCTION_IO_SINGLE(out, d)
 		bool df = vm_state->rflags & RFLAGS_DF;                                                  \
                                                                                                          \
 		/* TODO : introduce bound checks when EPT is used */                                     \
-		vm_##direction##size(port, *((type*)vm_state->reg_state->rsi));                          \
+		vm_##direction##size(vm_state->vm, port, *((type*)vm_state->reg_state->rsi));            \
 		vm_state->reg_state->rsi += df ? -sizeof(type) : sizeof(type);                           \
 	}
 

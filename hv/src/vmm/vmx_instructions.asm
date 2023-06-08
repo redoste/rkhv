@@ -37,6 +37,11 @@ vmx_vmptrld:
 	pop rdi
 	jmp vmx_error_check
 
+global vmx_vmptrst
+vmx_vmptrst:
+	vmptrst [rdi]
+	jmp vmx_error_check
+
 global vmx_vmread
 vmx_vmread:
 	vmread [rsi], rdi

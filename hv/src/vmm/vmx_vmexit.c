@@ -8,6 +8,7 @@
 #include <rkhv/stdio.h>
 
 #include "vm_emulated_instructions.h"
+#include "vm_manager.h"
 #include "vmx_instructions.h"
 #include "vmx_vmcs.h"
 #include "vmx_vmexit.h"
@@ -84,7 +85,10 @@ void vmx_vmexit_handler(vmx_vmexit_reg_state_t* vm_reg_state) {
 	VMX_ASSERT(vmx_vmread(VMCS_EXIT_QUALIFICATION, &exit_qualification));
 	VMX_ASSERT(vmx_vmread(VMCS_VM_EXIT_INSTRUCTION_LENGTH, &instruction_length));
 
-	vmx_vmexit_state_t vm_state = {.reg_state = vm_reg_state};
+	vmx_vmexit_state_t vm_state = {
+		.vm = vm_manager_get_current_vm(),
+		.reg_state = vm_reg_state,
+	};
 	VMX_ASSERT(vmx_vmread(VMCS_GUEST_RIP, &vm_state.rip));
 	VMX_ASSERT(vmx_vmread(VMCS_GUEST_RFLAGS, &vm_state.rflags));
 
@@ -95,7 +99,7 @@ void vmx_vmexit_handler(vmx_vmexit_reg_state_t* vm_reg_state) {
 			break;
 
 		case VMEXIT_REASON_HLT:
-			LOG("VM-exit : VM halted @ rip=%zxpq", vm_state.rip);
+			LOG("VM-exit : VM \"%s\" halted @ rip=%zxpq", vm_state.vm->name, vm_state.rip);
 			PANIC("VM halted");
 			break;
 

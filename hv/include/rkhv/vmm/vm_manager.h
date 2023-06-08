@@ -33,7 +33,6 @@ typedef struct vm_t {
 	vm_page_list_t* tracked_pages;
 } vm_t;
 // TODO : track guest physical pages
-// TODO : use vm_t in vmexit handlers
 
 extern vm_t* vm_manager_vm_list;
 vm_t* vm_manager_create_vmx_machine(const char* name);

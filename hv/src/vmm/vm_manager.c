@@ -14,6 +14,7 @@
 
 static arena_t* vm_manager_arena = NULL;
 vm_t* vm_manager_vm_list = NULL;
+static vm_t* vm_manager_current_vm = NULL;
 
 vm_t* vm_manager_create_vmx_machine(const char* name) {
 	if (!vm_manager_arena) {
@@ -32,9 +33,20 @@ vm_t* vm_manager_create_vmx_machine(const char* name) {
 __attribute__((noreturn)) void vm_manager_launch(vm_t* vm) {
 	LOG("vmptrld-ing  \"%s\" VMCS", vm->name);
 	VMX_ASSERT(vmx_vmptrld(vm->vmcs_region));
+	vm_manager_current_vm = vm;
 	LOG("vmlaunch-ing \"%s\"", vm->name);
 	VMX_ASSERT(vmx_vmlaunch());
 	PANIC("vm_launch reached its end");
+}
+
+vm_t* vm_manager_get_current_vm(void) {
+	uintptr_t curr_vmcs_region;
+	VMX_ASSERT(vmx_vmptrst(&curr_vmcs_region));
+	if (vm_manager_current_vm == NULL ||
+	    curr_vmcs_region != vm_manager_current_vm->vmcs_region) {
+		PANIC("vm_manager_current_vm and current VMCS pointer unsynced");
+	}
+	return vm_manager_current_vm;
 }
 
 static void vm_manager_track_page(vm_t* vm, uintptr_t physical_address, vm_page_type_t page_type) {

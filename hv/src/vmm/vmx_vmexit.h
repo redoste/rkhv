@@ -3,6 +3,8 @@
 
 #include <rkhv/stdint.h>
 
+#include <rkhv/vmm/vm_manager.h>
+
 typedef struct vmx_vmexit_reg_state_t {
 	uintptr_t r15;
 	uintptr_t r14;
@@ -22,6 +24,7 @@ typedef struct vmx_vmexit_reg_state_t {
 } vmx_vmexit_reg_state_t;
 
 typedef struct vmx_vmexit_state_t {
+	vm_t* vm;
 	vmx_vmexit_reg_state_t* reg_state;
 	uintptr_t rip;
 	uintptr_t rflags;
