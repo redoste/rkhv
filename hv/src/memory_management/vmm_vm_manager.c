@@ -1,11 +1,14 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include <rkhv/mem.h>
+#include <rkhv/memory_map.h>
 #include <rkhv/paging.h>
 #include <rkhv/stdint.h>
 
 #include <rkhv/vmm/vm_manager.h>
 
+#include "memory_management.h"
 #include "vmm_vm_manager.h"
 
 bool mm_page_used_by_vm_manager(uintptr_t page_physical_address) {
@@ -24,4 +27,10 @@ bool mm_page_used_by_vm_manager(uintptr_t page_physical_address) {
 		}
 	}
 	return false;
+}
+
+uintptr_t vm_manager_get_free_guest_physical_page(void) {
+	uintptr_t page_pa = mm_get_free_page();
+	memset(P2V_IDENTITY_MAP(page_pa), 0, PAGE_SIZE);
+	return page_pa;
 }

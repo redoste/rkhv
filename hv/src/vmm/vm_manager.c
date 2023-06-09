@@ -10,6 +10,7 @@
 #include <rkhv/stdio.h>
 
 #include "vm_manager.h"
+#include "vmx_ept.h"
 #include "vmx_instructions.h"
 
 static arena_t* vm_manager_arena = NULL;
@@ -83,4 +84,16 @@ static void vm_manager_track_page(vm_t* vm, uintptr_t physical_address, vm_page_
 
 void vm_manager_track_ept_page(vm_t* vm, const uint64_t* ept_page) {
 	vm_manager_track_page(vm, V2P_IDENTITY_MAP(ept_page), VM_PAGE_TYPE_EPT);
+}
+
+void vm_manager_allocate_guest_physical_memory(vm_t* vm, size_t guest_physical_pages) {
+	if (vm->guest_physical_pages != 0) {
+		PANIC("Reallocating guest physical memory on a VM with memory already allocated");
+	}
+	vm->guest_physical_pages = guest_physical_pages;
+	for (size_t i = 0; i < guest_physical_pages; i++) {
+		uintptr_t page_pa = vm_manager_get_free_guest_physical_page();
+		vm_manager_track_page(vm, page_pa, VM_PAGE_TYPE_GUEST_PHYSICAL);
+		vmx_ept_map_page(vm, i * PAGE_SIZE, page_pa);
+	}
 }

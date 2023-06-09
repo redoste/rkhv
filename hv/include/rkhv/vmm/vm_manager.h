@@ -10,6 +10,7 @@
 
 typedef enum __attribute__((packed)) vm_page_type_t {
 	VM_PAGE_TYPE_EPT,
+	VM_PAGE_TYPE_GUEST_PHYSICAL,
 } vm_page_type_t;
 
 typedef struct __attribute__((packed)) vm_page_list_t {
@@ -31,11 +32,13 @@ typedef struct vm_t {
 	uintptr_t vmcs_region;
 	vmx_initial_vmcs_config_t vmcs_config;
 
+	size_t guest_physical_pages;
 	vm_page_list_t* tracked_pages;
 } vm_t;
-// TODO : track guest physical pages
 
 extern vm_t* vm_manager_vm_list;
 vm_t* vm_manager_create_vmx_machine(const char* name);
+
+uintptr_t vm_manager_get_free_guest_physical_page(void);
 
 #endif
