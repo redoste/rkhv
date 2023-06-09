@@ -91,6 +91,7 @@
 #define EPT_PTE_SUBPAGE_WRITE_PERMISSIONS 0x2000000000000000
 #define EPT_PTE_SUPPRESS_VE               0x8000000000000000
 
+void vmx_ept_map_page(vm_t* vm, uintptr_t guest_physical_page, uintptr_t host_physical_page);
 void vmx_ept_create_identity_mapping(vm_t* vm);
 
 #endif

@@ -5,7 +5,8 @@
 
 #include <rkhv/vmm/vmx_vmcs.h>
 
-#define VM_T_FLAG_VMCS_INITIALIZED (1 << 0)
+#define VM_T_FLAG_VMCS_INITIALIZED     (1 << 0)
+#define VM_T_FLAG_EPT_PML4_INITIALIZED (1 << 1)
 
 typedef enum __attribute__((packed)) vm_page_type_t {
 	VM_PAGE_TYPE_EPT,
