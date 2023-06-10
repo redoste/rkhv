@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 #include <rkhv/memory_map.h>
 #include <rkhv/stdint.h>
 
@@ -66,6 +68,54 @@ void vmx_ept_map_page(vm_t* vm, uintptr_t guest_physical_page, uintptr_t host_ph
 	}
 	ept_pt[ept_pt_index] = EPT_PTE_READ | EPT_PTE_WRITE | EPT_PTE_EXECUTE |
 			       (host_physical_page & EPT_PTE_PHYSICAL_ADDRESS_PAGE);
+}
+
+bool vmx_ept_get_host_physical_address(vm_t* vm, uintptr_t guest_physical_address, uintptr_t* host_physical_address) {
+	size_t guestpa_pml4 = GUEST_PHYSICAL_ADDRESS_GET_PML4(guest_physical_address);
+	size_t guestpa_pdpt = GUEST_PHYSICAL_ADDRESS_GET_DIRECTORY_PTR(guest_physical_address);
+	size_t guestpa_pd = GUEST_PHYSICAL_ADDRESS_GET_DIRECTORY(guest_physical_address);
+	size_t guestpa_pt = GUEST_PHYSICAL_ADDRESS_GET_TABLE(guest_physical_address);
+	size_t guestpa_offset = GUEST_PHYSICAL_ADDRESS_GET_OFFSET(guest_physical_address);
+
+	if (!(vm->flags & VM_T_FLAG_EPT_PML4_INITIALIZED)) {
+		return false;
+	}
+
+	uint64_t* ept_pml4 = P2V_IDENTITY_MAP(vm->vmcs_config.eptp);
+	if (!(ept_pml4[guestpa_pml4] & EPT_PML4E_READ)) {
+		return false;
+	}
+
+	uint64_t* ept_pdpt = P2V_IDENTITY_MAP(ept_pml4[guestpa_pml4] & EPT_PML4E_PHYSICAL_ADDRESS_PDPT);
+	if (!(ept_pdpt[guestpa_pdpt] & EPT_PDPTE_READ)) {
+		return false;
+	}
+	if (ept_pdpt[guestpa_pdpt] & EPT_PDPTE_PAGE_SIZE) {
+		*host_physical_address = (ept_pdpt[guestpa_pdpt] & EPT_PDPTE_PHYSICAL_ADDRESS_PAGE) |
+					 (guest_physical_address & (GUEST_PHYSICAL_ADDRESS_D_MASK |
+								    GUEST_PHYSICAL_ADDRESS_TABLE_MASK |
+								    GUEST_PHYSICAL_ADDRESS_OFFSET_MASK));
+		return true;
+	}
+
+	uint64_t* ept_pd = P2V_IDENTITY_MAP(ept_pdpt[guestpa_pdpt] & EPT_PDPTE_PHYSICAL_ADDRESS_PD);
+	if (!(ept_pd[guestpa_pd] & EPT_PDE_READ)) {
+		return false;
+	}
+	if (ept_pd[guestpa_pd] & EPT_PDE_PAGE_SIZE) {
+		*host_physical_address = (ept_pd[guestpa_pd] & EPT_PDE_PHYSICAL_ADDRESS_PAGE) |
+					 (guest_physical_address & (GUEST_PHYSICAL_ADDRESS_TABLE_MASK |
+								    GUEST_PHYSICAL_ADDRESS_OFFSET_MASK));
+		return true;
+	}
+
+	uint64_t* ept_pt = P2V_IDENTITY_MAP(ept_pd[guestpa_pd] & EPT_PDE_PHYSICAL_ADDRESS_PT);
+	if (!(ept_pt[guestpa_pt] & EPT_PTE_READ)) {
+		return false;
+	}
+
+	*host_physical_address = (ept_pt[guestpa_pt] & EPT_PTE_PHYSICAL_ADDRESS_PAGE) | guestpa_offset;
+	return true;
 }
 
 void vmx_ept_create_identity_mapping(vm_t* vm) {
