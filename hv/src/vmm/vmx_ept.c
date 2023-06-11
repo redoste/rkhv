@@ -118,6 +118,12 @@ bool vmx_ept_get_host_physical_address(vm_t* vm, uintptr_t guest_physical_addres
 	return true;
 }
 
+/* NOTE : We use 1GiB EPT pages for identity mapping. As explained in paging_map_physical in boot/src/paging.c,
+ *        1GiB pages aren't supported on older hardware, thus it's very likely that 1GiB EPT pages are in a
+ *        similar situation.
+ *        Since EPT identity mapping will probably only be used for debugging purposes, support will be
+ *        handled by the higher level hypervisor (VMX features are emulated when using nested VMs).
+ */
 void vmx_ept_create_identity_mapping(vm_t* vm) {
 	if (vm->flags & VM_T_FLAG_EPT_PML4_INITIALIZED) {
 		PANIC("Setting up a new EPT with id mapping on a VM with EPT PML4 already initialized");
