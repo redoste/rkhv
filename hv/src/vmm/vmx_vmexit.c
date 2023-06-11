@@ -91,6 +91,12 @@ void vmx_vmexit_handler(vmx_vmexit_reg_state_t* vm_reg_state) {
 	};
 	VMX_ASSERT(vmx_vmread(VMCS_GUEST_RIP, &vm_state.rip));
 	VMX_ASSERT(vmx_vmread(VMCS_GUEST_RFLAGS, &vm_state.rflags));
+	VMX_ASSERT(vmx_vmread(VMCS_GUEST_CR0, &vm_state.cr0));
+	VMX_ASSERT(vmx_vmread(VMCS_GUEST_CR3, &vm_state.cr3));
+	VMX_ASSERT(vmx_vmread(VMCS_GUEST_CR4, &vm_state.cr4));
+	/* TODO : Save IA32_EFER (once save/load IA32_EFER is enabled in VMCS control fields)
+	 *        It will be used to check if the guest is in long mode
+	 */
 
 	switch (exit_reason) {
 		case VMEXIT_REASON_IO_INSTRUCTION:
@@ -111,4 +117,7 @@ void vmx_vmexit_handler(vmx_vmexit_reg_state_t* vm_reg_state) {
 	}
 	VMX_ASSERT(vmx_vmwrite(VMCS_GUEST_RIP, vm_state.rip));
 	VMX_ASSERT(vmx_vmwrite(VMCS_GUEST_RFLAGS, vm_state.rflags));
+	VMX_ASSERT(vmx_vmwrite(VMCS_GUEST_CR0, vm_state.cr0));
+	VMX_ASSERT(vmx_vmwrite(VMCS_GUEST_CR3, vm_state.cr3));
+	VMX_ASSERT(vmx_vmwrite(VMCS_GUEST_CR4, vm_state.cr4));
 }

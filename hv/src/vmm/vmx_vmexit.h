@@ -28,6 +28,10 @@ typedef struct vmx_vmexit_state_t {
 	vmx_vmexit_reg_state_t* reg_state;
 	uintptr_t rip;
 	uintptr_t rflags;
+
+	uint64_t cr0;
+	uint64_t cr3;
+	uint64_t cr4;
 } vmx_vmexit_state_t;
 
 void vmx_vmexit(void);
