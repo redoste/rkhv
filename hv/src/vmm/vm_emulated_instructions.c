@@ -4,6 +4,7 @@
 #include <rkhv/stdint.h>
 
 #include "vm_emulated_instructions.h"
+#include "vm_guest_paging.h"
 #include "vm_ioports.h"
 #include "vmx_vmexit.h"
 
@@ -16,13 +17,13 @@ VM_EMULATED_INSTRUCTION_IO_SINGLE(out, b)
 VM_EMULATED_INSTRUCTION_IO_SINGLE(out, w)
 VM_EMULATED_INSTRUCTION_IO_SINGLE(out, d)
 
-#define VM_EMULATED_INSTRUCTION_IO_STR(direction, size, type)                                            \
-	void vm_emulated_instruction_##direction##s##size(vmx_vmexit_state_t* vm_state, uint16_t port) { \
-		bool df = vm_state->rflags & RFLAGS_DF;                                                  \
-                                                                                                         \
-		/* TODO : introduce bound checks when EPT is used */                                     \
-		vm_##direction##size(vm_state->vm, port, *((type*)vm_state->reg_state->rsi));            \
-		vm_state->reg_state->rsi += df ? -sizeof(type) : sizeof(type);                           \
+#define VM_EMULATED_INSTRUCTION_IO_STR(direction, size, type)                                                                            \
+	void vm_emulated_instruction_##direction##s##size(vmx_vmexit_state_t* vm_state, uint16_t port) {                                 \
+		bool df = vm_state->rflags & RFLAGS_DF;                                                                                  \
+                                                                                                                                         \
+		type* hostva = vm_guest_paging_get_host_virtual_address_during_vmexit(vm_state, vm_state->reg_state->rsi, sizeof(type)); \
+		vm_##direction##size(vm_state->vm, port, *hostva);                                                                       \
+		vm_state->reg_state->rsi += df ? -sizeof(type) : sizeof(type);                                                           \
 	}
 
 VM_EMULATED_INSTRUCTION_IO_STR(out, b, uint8_t)
