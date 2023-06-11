@@ -20,10 +20,10 @@ bool paging_check_for_supported_level(void) {
 
 	uint64_t cr0 = cr0_read(), cr4 = cr4_read();
 	uint64_t ia32_efer = rdmsr(IA32_EFER);
-	return (cr0 & (1 << 31)) &&     // PG   : Paging
-	       (cr4 & (1 << 5)) &&      // PAE  : Physical Address Extension
-	       !(cr4 & (1 << 12)) &&    // LA57 : 57-Bit Linear Addresses
-	       (ia32_efer & (1 << 8));  // LME  : Long Mode Enable
+	return (cr0 & CR0_PG) &&        // Paging
+	       (cr4 & CR4_PAE) &&       // Physical Address Extension
+	       !(cr4 & CR4_LA57) &&     // 57-Bit Linear Addresses
+	       (ia32_efer & (1 << 8));  // Long Mode Enable
 }
 
 static EFI_STATUS paging_allocate_page(uint64_t** pages_out, size_t pages_count, paging_page_table_pool_t* page_table_pool) {

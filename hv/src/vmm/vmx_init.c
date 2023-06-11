@@ -22,7 +22,7 @@ void vmx_setup(void) {
 	/* NOTE : For now we will assume only CR4.VMXE is required and not set
 	 *        If the currently used CPU has an other requirement, we probably don't support this configuration thus we'll just crash miserably
 	 */
-	cr4_write(cr4_read() | (1 << 13));  // CR4.VMXE : Virtual Machine Extensions Enable
+	cr4_write(cr4_read() | CR4_VMXE);  // CR4.VMXE : Virtual Machine Extensions Enable
 	LOG("IA32_VMX_CR0_FIXED : %zxpq:%zxpq / cr0 : %zxpq", rdmsr(IA32_VMX_CR0_FIXED0), rdmsr(IA32_VMX_CR0_FIXED1), cr0_read());
 	LOG("IA32_VMX_CR4_FIXED : %zxpq:%zxpq / cr4 : %zxpq", rdmsr(IA32_VMX_CR4_FIXED0), rdmsr(IA32_VMX_CR4_FIXED1), cr4_read());
 
