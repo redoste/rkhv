@@ -32,6 +32,7 @@ typedef struct vmx_vmexit_state_t {
 	uint64_t cr0;
 	uint64_t cr3;
 	uint64_t cr4;
+	uint64_t ia32_efer;
 } vmx_vmexit_state_t;
 
 void vmx_vmexit(void);

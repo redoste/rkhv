@@ -51,6 +51,7 @@ hvmain(chainload_page_t* chainload_page) {
 	vm->vmcs_config.guest_state.cr0 = cr0_read();
 	vm->vmcs_config.guest_state.cr3 = guest_cr3;
 	vm->vmcs_config.guest_state.cr4 = cr4_read();
+	vm->vmcs_config.guest_state.ia32_efer = rdmsr(IA32_EFER);
 	vm->vmcs_config.guest_state.cs = RKHV_CS;
 	vm->vmcs_config.guest_state.ds = RKHV_DS;
 	interrupts_sidt(&vm->vmcs_config.guest_state.idtr);

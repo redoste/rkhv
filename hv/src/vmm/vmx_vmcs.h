@@ -89,9 +89,12 @@
 
 /* VM-Exit Controls bits : Vol 3 Table 25-13 */
 #define VMCS_CF_VMEX_HOST_ADDRESS_SPACE_SIZE (1 << 9)
+#define VMCS_CF_VMEX_SAVE_IA32_EFER          (1 << 20)
+#define VMCS_CF_VMEX_LOAD_IA32_EFER          (1 << 21)
 
 /* VM-Entry Controls bits : Vol 3 Table 25-15 */
 #define VMCS_CF_VMEN_IA_32E_MODE_GUEST (1 << 9)
+#define VMCS_CF_VMEN_LOAD_IA32_EFER    (1 << 15)
 
 #define VMCS_HOST_ES                             0x00000C00
 #define VMCS_HOST_CS                             0x00000C02
@@ -115,6 +118,10 @@
 #define VMCS_HOST_IA32_S_CET                     0x00006C18
 #define VMCS_HOST_SSP1                           0x00006C1A
 #define VMCS_HOST_IA32_INTERRUPT_SSP_TABLE_ADDR1 0x00006C1C
+#define VMCS_HOST_IA32_PAT                       0x00002C00
+#define VMCS_HOST_IA32_EFER                      0x00002C02
+#define VMCS_HOST_IA32_PERF_GLOBAL_CTRL          0x00002C04
+#define VMCS_HOST_IA32_PKRS                      0x00002C06
 
 #define VMCS_GUEST_ES                            0x00000800
 #define VMCS_GUEST_CS                            0x00000802
