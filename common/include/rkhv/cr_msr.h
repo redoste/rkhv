@@ -54,6 +54,11 @@
 #define CR4_PKS        (1 << 24)
 #define CR4_UINTR      (1 << 25)
 
+#define IA32_EFER_SCE (1 << 0)
+#define IA32_EFER_LME (1 << 8)
+#define IA32_EFER_LMA (1 << 10)
+#define IA32_EFER_NXE (1 << 11)
+
 static inline uint64_t rdmsr(uint32_t msr) {
 	uint32_t ret_high, ret_low;
 	asm("rdmsr"
