@@ -24,9 +24,12 @@ static void vmd_8250uart_outb_handler(vm_t* vm, void* device_data, uint16_t port
 	uart->output_buffer_size++;
 
 	if (read_byte == '\n' || uart->output_buffer_size >= sizeof(uart->output_buffer) - 1) {
-		uart->output_buffer[uart->output_buffer_size] = 0;
-		// TODO : trim or check for new line
-		stdio_printf("\033[34;1mvm \"%s\"(COM1):\033[0m %s", vm->name, uart->output_buffer);
+		if (uart->output_buffer_size > 0 && uart->output_buffer[uart->output_buffer_size - 1] == '\n') {
+			uart->output_buffer[uart->output_buffer_size - 1] = 0;
+		} else {
+			uart->output_buffer[uart->output_buffer_size] = 0;
+		}
+		stdio_printf("\033[34;1mvm \"%s\"(COM1):\033[0m %s\n", vm->name, uart->output_buffer);
 		uart->output_buffer_size = 0;
 	}
 }
