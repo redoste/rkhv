@@ -20,6 +20,8 @@ SRCS_C:=src/main.c\
         src/serial.c\
         src/stdio.c\
         src/string.c\
+        src/vmm/devices/vmd.c\
+        src/vmm/devices/vmd_8250uart.c\
         src/vmm/vm_emulated_instructions.c\
         src/vmm/vm_guest_paging.c\
         src/vmm/vm_ioports.c\

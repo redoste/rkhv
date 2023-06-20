@@ -97,3 +97,12 @@ void vm_manager_allocate_guest_physical_memory(vm_t* vm, size_t guest_physical_p
 		vmx_ept_map_page(vm, i * PAGE_SIZE, page_pa);
 	}
 }
+
+void vm_manager_register_device(vm_t* vm, vm_device_t* device) {
+	if (device->next != NULL) {
+		PANIC("Registering a device that is probably already registered");
+	}
+
+	device->next = vm->devices;
+	vm->devices = device;
+}

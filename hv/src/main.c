@@ -13,6 +13,7 @@
 #include "interrupts.h"
 #include "memory_management/memory_management.h"
 #include "segments.h"
+#include "vmm/devices/vmd_8250uart.h"
 #include "vmm/vm_guest_paging.h"
 #include "vmm/vm_manager.h"
 #include "vmm/vmx_ept.h"
@@ -59,6 +60,8 @@ hvmain(chainload_page_t* chainload_page) {
 
 	vmx_create_initialized_vmcs(vm);
 	LOG("new initialized VMCS created @ %p", (void*)vm->vmcs_region);
+
+	vm_manager_register_device(vm, vmd_8250uart_create());
 
 	vm_manager_launch(vm);
 }

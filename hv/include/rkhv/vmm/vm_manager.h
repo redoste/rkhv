@@ -21,6 +21,30 @@ typedef struct __attribute__((packed)) vm_page_list_t {
 } vm_page_list_t;
 static_assert(sizeof(vm_page_list_t) == 3 * sizeof(uintptr_t), "vm_page_list_t isn't properly packed");
 
+typedef struct vm_t vm_t;
+typedef void (*vm_device_outb_handler_t)(vm_t*, void*, uint16_t, uint8_t);
+typedef void (*vm_device_outw_handler_t)(vm_t*, void*, uint16_t, uint16_t);
+typedef void (*vm_device_outd_handler_t)(vm_t*, void*, uint16_t, uint32_t);
+typedef uint8_t (*vm_device_inb_handler_t)(vm_t*, void*, uint16_t);
+typedef uint16_t (*vm_device_inw_handler_t)(vm_t*, void*, uint16_t);
+typedef uint32_t (*vm_device_ind_handler_t)(vm_t*, void*, uint16_t);
+
+#define VM_DEVICE_T_MAX_PORTS 16
+typedef struct vm_device_t {
+	struct vm_device_t* next;
+	uint16_t ports[VM_DEVICE_T_MAX_PORTS];
+	size_t ports_len;
+
+	void* device_data;
+
+	vm_device_outb_handler_t outb_handler;
+	vm_device_outw_handler_t outw_handler;
+	vm_device_outd_handler_t outd_handler;
+	vm_device_inb_handler_t inb_handler;
+	vm_device_inw_handler_t inw_handler;
+	vm_device_ind_handler_t ind_handler;
+} vm_device_t;
+
 /* TODO : Find a clean way to make this structure easily adaptable to
  *        other virtualization extensions (such as AMD SVM)
  */
@@ -34,6 +58,8 @@ typedef struct vm_t {
 
 	size_t guest_physical_pages;
 	vm_page_list_t* tracked_pages;
+
+	vm_device_t* devices;
 } vm_t;
 
 extern vm_t* vm_manager_vm_list;
