@@ -5,7 +5,7 @@ if [ "$(echo "$commit_title" | tr -d '\n' | wc -c)" -gt 72 ]; then
 	exit 1
 fi
 
-regex='^[a-z/{},]+ : [A-Z0-9].+$'
+regex='^[a-z0-9/{},]+ : [A-Z0-9].+$'
 if ! echo "$commit_title" | grep -E "$regex" >/dev/null; then
 	echo "Commit title doesn't match the \"subdir/category : Description\" format (\`$regex\`)" >&2
 	exit 1
