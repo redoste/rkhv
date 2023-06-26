@@ -90,6 +90,7 @@ void vmx_vmexit_handler(vmx_vmexit_reg_state_t* vm_reg_state) {
 		.reg_state = vm_reg_state,
 	};
 	VMX_ASSERT(vmx_vmread(VMCS_GUEST_RIP, &vm_state.rip));
+	VMX_ASSERT(vmx_vmread(VMCS_GUEST_RSP, &vm_state.rsp));
 	VMX_ASSERT(vmx_vmread(VMCS_GUEST_RFLAGS, &vm_state.rflags));
 	VMX_ASSERT(vmx_vmread(VMCS_GUEST_CR0, &vm_state.cr0));
 	VMX_ASSERT(vmx_vmread(VMCS_GUEST_CR3, &vm_state.cr3));
@@ -114,6 +115,7 @@ void vmx_vmexit_handler(vmx_vmexit_reg_state_t* vm_reg_state) {
 			break;
 	}
 	VMX_ASSERT(vmx_vmwrite(VMCS_GUEST_RIP, vm_state.rip));
+	VMX_ASSERT(vmx_vmwrite(VMCS_GUEST_RSP, vm_state.rsp));
 	VMX_ASSERT(vmx_vmwrite(VMCS_GUEST_RFLAGS, vm_state.rflags));
 	VMX_ASSERT(vmx_vmwrite(VMCS_GUEST_CR0, vm_state.cr0));
 	VMX_ASSERT(vmx_vmwrite(VMCS_GUEST_CR3, vm_state.cr3));

@@ -27,6 +27,7 @@ typedef struct vmx_vmexit_state_t {
 	vm_t* vm;
 	vmx_vmexit_reg_state_t* reg_state;
 	uintptr_t rip;
+	uintptr_t rsp;
 	uintptr_t rflags;
 
 	uint64_t cr0;
