@@ -13,16 +13,17 @@
 #include "memory_management.h"
 #include "vmm_vmx_pages.h"
 
-// TODO : Store validity separately : it is technically possible to have the zeroth page here
+static bool vmxon_region_valid = false;
 static uintptr_t vmxon_region = (uintptr_t)NULL;
+static bool msr_bitmaps_page_valid = false;
 static uintptr_t msr_bitmaps_page = (uintptr_t)NULL;
 
 bool mm_page_used_by_vmx(uintptr_t page_physical_address) {
-	if (page_physical_address == vmxon_region) {
+	if (vmxon_region_valid && page_physical_address == vmxon_region) {
 		return true;
 	}
 
-	if (page_physical_address == msr_bitmaps_page) {
+	if (msr_bitmaps_page_valid && page_physical_address == msr_bitmaps_page) {
 		return true;
 	}
 
@@ -34,22 +35,24 @@ static inline uint32_t vmx_get_vmcs_revision_identifier(void) {
 }
 
 uintptr_t vmx_get_vmxon_region(void) {
-	if (vmxon_region) {
+	if (vmxon_region_valid) {
 		return vmxon_region;
 	}
 
 	vmxon_region = mm_get_free_page();
+	vmxon_region_valid = true;
 	uint32_t* vmxon_region_va = P2V_IDENTITY_MAP(vmxon_region);
 	*vmxon_region_va = vmx_get_vmcs_revision_identifier();
 	return vmxon_region;
 }
 
 uintptr_t vmx_get_msr_bitmaps_page(void) {
-	if (msr_bitmaps_page) {
+	if (msr_bitmaps_page_valid) {
 		return msr_bitmaps_page;
 	}
 
 	msr_bitmaps_page = mm_get_free_page();
+	msr_bitmaps_page_valid = true;
 	vmx_init_msr_bitmaps(P2V_IDENTITY_MAP(msr_bitmaps_page));
 	return msr_bitmaps_page;
 }
