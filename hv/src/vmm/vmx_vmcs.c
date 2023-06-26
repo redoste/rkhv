@@ -129,8 +129,10 @@ void vmx_create_initialized_vmcs(vm_t* vm) {
 		{VMCS_CF_VM_ENTRY_INTERRUPTION_INFORMATION_FIELD, 0, 0},
 
 		{VMCS_CF_CR3_TARGET_COUNT, 0, 0},
-		{VMCS_CF_CR0_READ_SHADOW, cr0_read(), 0},
-		{VMCS_CF_CR4_READ_SHADOW, cr4_read(), 0},
+		{VMCS_CF_CR0_GUEST_HOST_MASK, 0, 0},
+		{VMCS_CF_CR0_READ_SHADOW, 0, 0},
+		{VMCS_CF_CR4_GUEST_HOST_MASK, CR4_VMXE, 0},
+		{VMCS_CF_CR4_READ_SHADOW, CR4_VMXE, 0},
 
 		/* === Host State === */
 		{VMCS_HOST_ES, RKHV_DS, 0},

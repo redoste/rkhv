@@ -5,6 +5,9 @@
 
 #include "vmx_vmexit.h"
 
+void vm_emulated_instruction_mov_to_cr(vmx_vmexit_state_t* vm_state, uint8_t crn, uint64_t new_cr);
+uint64_t vm_emulated_instruction_mov_from_cr(vmx_vmexit_state_t* vm_state, uint8_t crn);
+
 void vm_emulated_instruction_outb(vmx_vmexit_state_t* vm_state, uint16_t port);
 void vm_emulated_instruction_outw(vmx_vmexit_state_t* vm_state, uint16_t port);
 void vm_emulated_instruction_outd(vmx_vmexit_state_t* vm_state, uint16_t port);

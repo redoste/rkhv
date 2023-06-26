@@ -40,7 +40,20 @@ void vmx_vmexit(void);
 void vmx_vmexit_handler(vmx_vmexit_reg_state_t* vm_reg_state);
 
 #define VMEXIT_REASON_HLT            12
+#define VMEXIT_REASON_CR_ACCESSES    28
 #define VMEXIT_REASON_IO_INSTRUCTION 30
+
+#define VMEXIT_QUALIFICATION_CR_CRN(x)                  ((x)&0xf)
+#define VMEXIT_QUALIFICATION_CR_ACCESS_TYPE(x)          (((x) >> 4) & 3)
+#define VMEXIT_QUALIFICATION_CR_ACCESS_TYPE_MOV_TO_CR   0
+#define VMEXIT_QUALIFICATION_CR_ACCESS_TYPE_MOV_FROM_CR 1
+#define VMEXIT_QUALIFICATION_CR_ACCESS_TYPE_CLTS        2
+#define VMEXIT_QUALIFICATION_CR_ACCESS_TYPE_LMSW        3
+#define VMEXIT_QUALIFICATION_CR_LMSW_OPERAND(x)         (((x) >> 6) & 1)
+#define VMEXIT_QUALIFICATION_CR_LMSW_OPERAND_REG        0
+#define VMEXIT_QUALIFICATION_CR_LMSW_OPERAND_MEM        1
+#define VMEXIT_QUALIFICATION_CR_MOV_GPR(x)              (((x) >> 8) & 0xf)
+#define VMEXIT_QUALIFICATION_CR_LMSW_SRC(x)             (((x) >> 16) & 0xffff)
 
 #define VMEXIT_QUALIFICATION_IO_SIZE(x)       ((x)&3)
 #define VMEXIT_QUALIFICATION_IO_SIZE_BYTE     0

@@ -13,6 +13,40 @@
 #include "vmx_vmcs.h"
 #include "vmx_vmexit.h"
 
+static void vmx_vmexit_cr_accesses(uint64_t exit_qualification, vmx_vmexit_state_t* vm_state) {
+	uint8_t crn = VMEXIT_QUALIFICATION_CR_CRN(exit_qualification);
+
+	// TODO : factorize this lookup if it's used by another exit reason
+	uint64_t* possible_gpr[] = {
+		&vm_state->reg_state->rax,
+		&vm_state->reg_state->rcx,
+		&vm_state->reg_state->rdx,
+		&vm_state->reg_state->rbx,
+		&vm_state->rsp,
+		&vm_state->reg_state->rbp,
+		&vm_state->reg_state->rsi,
+		&vm_state->reg_state->rdi,
+		&vm_state->reg_state->r8,
+		&vm_state->reg_state->r9,
+		&vm_state->reg_state->r10,
+		&vm_state->reg_state->r11,
+		&vm_state->reg_state->r12,
+		&vm_state->reg_state->r13,
+		&vm_state->reg_state->r14,
+		&vm_state->reg_state->r15,
+	};
+	uint64_t* gpr = possible_gpr[VMEXIT_QUALIFICATION_CR_MOV_GPR(exit_qualification)];
+
+	if (VMEXIT_QUALIFICATION_CR_ACCESS_TYPE(exit_qualification) == VMEXIT_QUALIFICATION_CR_ACCESS_TYPE_MOV_TO_CR) {
+		vm_emulated_instruction_mov_to_cr(vm_state, crn, *gpr);
+	} else if (VMEXIT_QUALIFICATION_CR_ACCESS_TYPE(exit_qualification) == VMEXIT_QUALIFICATION_CR_ACCESS_TYPE_MOV_FROM_CR) {
+		*gpr = vm_emulated_instruction_mov_from_cr(vm_state, crn);
+	} else {
+		LOG("VM-exit : qualification unsupported : qualification=%zxpq @ rip=%zxpq", exit_qualification, vm_state->rip);
+		PANIC("unsupported CR VM-exit qualification");
+	}
+}
+
 static void vmx_vmexit_io(uint64_t exit_qualification, vmx_vmexit_state_t* vm_state) {
 	enum {
 		EMULATED_INSTRUCTION_SINGLE,
@@ -98,6 +132,11 @@ void vmx_vmexit_handler(vmx_vmexit_reg_state_t* vm_reg_state) {
 	VMX_ASSERT(vmx_vmread(VMCS_GUEST_IA32_EFER, &vm_state.ia32_efer));
 
 	switch (exit_reason) {
+		case VMEXIT_REASON_CR_ACCESSES:
+			vmx_vmexit_cr_accesses(exit_qualification, &vm_state);
+			vm_state.rip += instruction_length;
+			break;
+
 		case VMEXIT_REASON_IO_INSTRUCTION:
 			vmx_vmexit_io(exit_qualification, &vm_state);
 			vm_state.rip += instruction_length;
