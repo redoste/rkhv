@@ -77,7 +77,8 @@
 #define VMCS_CF_PPBVMEC_ACTIVATE_SECONDARY_CONTROLS (1 << 31)
 
 /* Secondary Processor-Based VM-Execution Controls bits : Vol 3 Table 25-7 */
-#define VMCS_CF_SPBVMEC_ENABLE_EPT (1 << 1)
+#define VMCS_CF_SPBVMEC_ENABLE_EPT         (1 << 1)
+#define VMCS_CF_SPBVMEC_UNRESTRICTED_GUEST (1 << 7)
 
 /* Extended-Page-Table Pointer : Vol 3 Table 25-9 */
 #define VMCS_CF_EPTP_UNCACHEABLE             0
