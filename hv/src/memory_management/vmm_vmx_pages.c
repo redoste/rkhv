@@ -8,14 +8,21 @@
 
 #include <rkhv/panic.h>
 #include <rkhv/vmm/vmx_pages.h>
+#include <rkhv/vmm/vmx_vmcs.h>
 
 #include "memory_management.h"
 #include "vmm_vmx_pages.h"
 
+// TODO : Store validity separately : it is technically possible to have the zeroth page here
 static uintptr_t vmxon_region = (uintptr_t)NULL;
+static uintptr_t msr_bitmaps_page = (uintptr_t)NULL;
 
 bool mm_page_used_by_vmx(uintptr_t page_physical_address) {
 	if (page_physical_address == vmxon_region) {
+		return true;
+	}
+
+	if (page_physical_address == msr_bitmaps_page) {
 		return true;
 	}
 
@@ -35,6 +42,16 @@ uintptr_t vmx_get_vmxon_region(void) {
 	uint32_t* vmxon_region_va = P2V_IDENTITY_MAP(vmxon_region);
 	*vmxon_region_va = vmx_get_vmcs_revision_identifier();
 	return vmxon_region;
+}
+
+uintptr_t vmx_get_msr_bitmaps_page(void) {
+	if (msr_bitmaps_page) {
+		return msr_bitmaps_page;
+	}
+
+	msr_bitmaps_page = mm_get_free_page();
+	vmx_init_msr_bitmaps(P2V_IDENTITY_MAP(msr_bitmaps_page));
+	return msr_bitmaps_page;
 }
 
 uintptr_t vmx_get_free_vmcs_region(void) {

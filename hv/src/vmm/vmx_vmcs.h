@@ -74,6 +74,7 @@
 /* Primary Processor-Based VM-Execution Controls bits : Vol 3 Table 25-6 */
 #define VMCS_CF_PPBVMEC_HLT_EXITING                 (1 << 7)
 #define VMCS_CF_PPBVMEC_UNCONDITIONAL_IO_EXITING    (1 << 24)
+#define VMCS_CF_PPBVMEC_USE_MSR_BITMAPS             (1 << 28)
 #define VMCS_CF_PPBVMEC_ACTIVATE_SECONDARY_CONTROLS (1 << 31)
 
 /* Secondary Processor-Based VM-Execution Controls bits : Vol 3 Table 25-7 */
@@ -192,6 +193,16 @@
 #define VMCS_EXIT_REASON                0x00004402
 #define VMCS_VM_EXIT_INSTRUCTION_LENGTH 0x0000440C
 #define VMCS_EXIT_QUALIFICATION         0x00006400
+
+#define VMCS_MSR_BITMAPS_READ_LOW       0
+#define VMCS_MSR_BITMAPS_READ_HIGH      1024
+#define VMCS_MSR_BITMAPS_WRITE_LOW      2048
+#define VMCS_MSR_BITMAPS_WRITE_HIGH     3072
+#define VMCS_MSR_BITMAPS_LOW_OFFSET(x)  ((x) / 8)
+#define VMCS_MSR_BITMAPS_LOW_SHIFT(x)   ((x) % 8)
+#define VMCS_MSR_BITMAPS_HIGH_BASE      0xc0000000
+#define VMCS_MSR_BITMAPS_HIGH_OFFSET(x) (((x)-VMCS_MSR_BITMAPS_HIGH_BASE) / 8)
+#define VMCS_MSR_BITMAPS_HIGH_SHIFT(x)  (((x)-VMCS_MSR_BITMAPS_HIGH_BASE) % 8)
 
 void vmx_create_initialized_vmcs(vm_t* vm);
 

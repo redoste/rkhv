@@ -22,4 +22,6 @@ typedef struct vmx_initial_vmcs_config_t {
 	} guest_state;
 } vmx_initial_vmcs_config_t;
 
+void vmx_init_msr_bitmaps(uint8_t* msr_bitmaps);
+
 #endif
