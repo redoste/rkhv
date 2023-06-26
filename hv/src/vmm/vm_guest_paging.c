@@ -26,19 +26,25 @@ uintptr_t vm_guest_paging_setup_identity(vm_t* vm) {
 	if (vm->guest_physical_pages == 0) {
 		PANIC("Unable to setup guest identity paging on a VM without guest physical pages allocated");
 	}
+	if (vm->guest_physical_pages_used_by_initial_setup != 0) {
+		PANIC("Guest identity paging should be setup before any other steps allocating memory");
+	}
 
 	// NOTE : As explained in paging_map_physical in boot/src/paging.c : We use 2MiB pages for compatibility
 
 	uintptr_t pml4_guestpa = (vm->guest_physical_pages - 1) * PAGE_SIZE;
+	vm->guest_physical_pages_used_by_initial_setup++;
 	uint64_t* pml4_hostva;
 	EPT_GET_HOSTVA(pml4_guestpa, pml4_hostva);
 
 	uintptr_t pdpt_guestpa = pml4_guestpa - PAGE_SIZE;
+	vm->guest_physical_pages_used_by_initial_setup++;
 	uint64_t* pdpt_hostva;
 	EPT_GET_HOSTVA(pdpt_guestpa, pdpt_hostva);
 
 	for (size_t pdpt_index = 0; pdpt_index < PAGE_TABLE_ENTRIES; pdpt_index++) {
 		uintptr_t pd_guestpa = pdpt_guestpa - ((pdpt_index + 1) * PAGE_SIZE);
+		vm->guest_physical_pages_used_by_initial_setup++;
 		uint64_t* pd_hostva;
 		EPT_GET_HOSTVA(pd_guestpa, pd_hostva);
 

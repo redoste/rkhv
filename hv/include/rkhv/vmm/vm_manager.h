@@ -57,6 +57,12 @@ typedef struct vm_t {
 	vmx_initial_vmcs_config_t vmcs_config;
 
 	size_t guest_physical_pages;
+	/* This is the amount of pages at the end of guest physical memory
+	 * that was used by the initial setup of the guest (such as its
+	 * identity paging or the structures for the boot protocol of the
+	 * guest operating system)
+	 */
+	size_t guest_physical_pages_used_by_initial_setup;
 	vm_page_list_t* tracked_pages;
 
 	vm_device_t* devices;
