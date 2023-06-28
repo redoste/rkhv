@@ -132,6 +132,11 @@ void vmx_vmexit_handler(vmx_vmexit_reg_state_t* vm_reg_state) {
 	VMX_ASSERT(vmx_vmread(VMCS_GUEST_IA32_EFER, &vm_state.ia32_efer));
 
 	switch (exit_reason) {
+		case VMEXIT_REASON_CPUID:
+			vm_emulated_instruction_cpuid(&vm_state);
+			vm_state.rip += instruction_length;
+			break;
+
 		case VMEXIT_REASON_CR_ACCESSES:
 			vmx_vmexit_cr_accesses(exit_qualification, &vm_state);
 			vm_state.rip += instruction_length;

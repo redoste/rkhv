@@ -15,6 +15,20 @@
 #include "vmx_vmcs.h"
 #include "vmx_vmexit.h"
 
+void vm_emulated_instruction_cpuid(vmx_vmexit_state_t* vm_state) {
+	if (vm_state->reg_state->rax >= 0x40000000 && vm_state->reg_state->rax <= 0x4FFFFFFF) {
+		/* These invalid values are used by other hypervisors to enable paravirtualization
+		 * We intentionally suppress them since we are probably running under another hypervisor during development
+		 */
+		return;
+	}
+
+	// TODO : add a way to customize `cpuid`
+	asm("cpuid"
+	    : "=a"(vm_state->reg_state->rax), "=b"(vm_state->reg_state->rbx), "=c"(vm_state->reg_state->rcx), "=d"(vm_state->reg_state->rdx)
+	    : "a"(vm_state->reg_state->rax), "b"(vm_state->reg_state->rbx), "c"(vm_state->reg_state->rcx), "d"(vm_state->reg_state->rdx));
+}
+
 void vm_emulated_instruction_mov_to_cr(vmx_vmexit_state_t* vm_state, uint8_t crn, uint64_t new_cr) {
 	if (crn == 3) {
 		vm_state->cr3 = new_cr;
