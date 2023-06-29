@@ -54,27 +54,50 @@ uint64_t vm_emulated_instruction_mov_from_cr(vmx_vmexit_state_t* vm_state, uint8
 	}
 }
 
-#define VM_EMULATED_INSTRUCTION_IO_SINGLE(direction, size)                                            \
-	void vm_emulated_instruction_##direction##size(vmx_vmexit_state_t* vm_state, uint16_t port) { \
-		vm_##direction##size(vm_state->vm, port, vm_state->reg_state->rax);                   \
+#define VM_EMULATED_INSTRUCTION_OUT_SINGLE(size)                                              \
+	void vm_emulated_instruction_out##size(vmx_vmexit_state_t* vm_state, uint16_t port) { \
+		vm_out##size(vm_state->vm, port, vm_state->reg_state->rax);                   \
 	}
 
-VM_EMULATED_INSTRUCTION_IO_SINGLE(out, b)
-VM_EMULATED_INSTRUCTION_IO_SINGLE(out, w)
-VM_EMULATED_INSTRUCTION_IO_SINGLE(out, d)
+VM_EMULATED_INSTRUCTION_OUT_SINGLE(b)
+VM_EMULATED_INSTRUCTION_OUT_SINGLE(w)
+VM_EMULATED_INSTRUCTION_OUT_SINGLE(d)
 
-#define VM_EMULATED_INSTRUCTION_IO_STR(direction, size, type)                                                                            \
-	void vm_emulated_instruction_##direction##s##size(vmx_vmexit_state_t* vm_state, uint16_t port) {                                 \
+#define VM_EMULATED_INSTRUCTION_IN_SINGLE(size, mask)                                        \
+	void vm_emulated_instruction_in##size(vmx_vmexit_state_t* vm_state, uint16_t port) { \
+		vm_state->reg_state->rax = (vm_state->reg_state->rax & (mask)) |             \
+					   vm_in##size(vm_state->vm, port);                  \
+	}
+
+VM_EMULATED_INSTRUCTION_IN_SINGLE(b, ~0xff)
+VM_EMULATED_INSTRUCTION_IN_SINGLE(w, ~0xffff)
+VM_EMULATED_INSTRUCTION_IN_SINGLE(d, ~0xffffffff)
+
+#define VM_EMULATED_INSTRUCTION_OUT_STR(size, type)                                                                                      \
+	void vm_emulated_instruction_outs##size(vmx_vmexit_state_t* vm_state, uint16_t port) {                                           \
 		bool df = vm_state->rflags & RFLAGS_DF;                                                                                  \
                                                                                                                                          \
 		type* hostva = vm_guest_paging_get_host_virtual_address_during_vmexit(vm_state, vm_state->reg_state->rsi, sizeof(type)); \
-		vm_##direction##size(vm_state->vm, port, *hostva);                                                                       \
+		vm_out##size(vm_state->vm, port, *hostva);                                                                               \
 		vm_state->reg_state->rsi += df ? -sizeof(type) : sizeof(type);                                                           \
 	}
 
-VM_EMULATED_INSTRUCTION_IO_STR(out, b, uint8_t)
-VM_EMULATED_INSTRUCTION_IO_STR(out, w, uint16_t)
-VM_EMULATED_INSTRUCTION_IO_STR(out, d, uint32_t)
+VM_EMULATED_INSTRUCTION_OUT_STR(b, uint8_t)
+VM_EMULATED_INSTRUCTION_OUT_STR(w, uint16_t)
+VM_EMULATED_INSTRUCTION_OUT_STR(d, uint32_t)
+
+#define VM_EMULATED_INSTRUCTION_IN_STR(size, type)                                                                                       \
+	void vm_emulated_instruction_ins##size(vmx_vmexit_state_t* vm_state, uint16_t port) {                                            \
+		bool df = vm_state->rflags & RFLAGS_DF;                                                                                  \
+                                                                                                                                         \
+		type* hostva = vm_guest_paging_get_host_virtual_address_during_vmexit(vm_state, vm_state->reg_state->rdi, sizeof(type)); \
+		*hostva = vm_in##size(vm_state->vm, port);                                                                               \
+		vm_state->reg_state->rdi += df ? -sizeof(type) : sizeof(type);                                                           \
+	}
+
+VM_EMULATED_INSTRUCTION_IN_STR(b, uint8_t)
+VM_EMULATED_INSTRUCTION_IN_STR(w, uint16_t)
+VM_EMULATED_INSTRUCTION_IN_STR(d, uint32_t)
 
 #define VM_EMULATED_INSTRUCTION_IO_STRREP(direction, size)                                                   \
 	void vm_emulated_instruction_rep_##direction##s##size(vmx_vmexit_state_t* vm_state, uint16_t port) { \
@@ -87,3 +110,6 @@ VM_EMULATED_INSTRUCTION_IO_STR(out, d, uint32_t)
 VM_EMULATED_INSTRUCTION_IO_STRREP(out, b)
 VM_EMULATED_INSTRUCTION_IO_STRREP(out, w)
 VM_EMULATED_INSTRUCTION_IO_STRREP(out, d)
+VM_EMULATED_INSTRUCTION_IO_STRREP(in, b)
+VM_EMULATED_INSTRUCTION_IO_STRREP(in, w)
+VM_EMULATED_INSTRUCTION_IO_STRREP(in, d)

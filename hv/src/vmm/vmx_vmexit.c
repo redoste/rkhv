@@ -75,19 +75,19 @@ static void vmx_vmexit_io(uint64_t exit_qualification, vmx_vmexit_state_t* vm_st
 		},
 		[VMEXIT_QUALIFICATION_IO_DIRECTION_IN] = {
 			[VMEXIT_QUALIFICATION_IO_SIZE_BYTE] = {
-				[EMULATED_INSTRUCTION_SINGLE] = NULL,
-				[EMULATED_INSTRUCTION_STR] = NULL,
-				[EMULATED_INSTRUCTION_STRREP] = NULL,
+				[EMULATED_INSTRUCTION_SINGLE] = vm_emulated_instruction_inb,
+				[EMULATED_INSTRUCTION_STR] = vm_emulated_instruction_insb,
+				[EMULATED_INSTRUCTION_STRREP] = vm_emulated_instruction_rep_insb,
 			},
 			[VMEXIT_QUALIFICATION_IO_SIZE_WORD] = {
-				[EMULATED_INSTRUCTION_SINGLE] = NULL,
-				[EMULATED_INSTRUCTION_STR] = NULL,
-				[EMULATED_INSTRUCTION_STRREP] = NULL,
+				[EMULATED_INSTRUCTION_SINGLE] = vm_emulated_instruction_inw,
+				[EMULATED_INSTRUCTION_STR] = vm_emulated_instruction_insw,
+				[EMULATED_INSTRUCTION_STRREP] = vm_emulated_instruction_rep_insw,
 			},
 			[VMEXIT_QUALIFICATION_IO_SIZE_DWORD] = {
-				[EMULATED_INSTRUCTION_SINGLE] = NULL,
-				[EMULATED_INSTRUCTION_STR] = NULL,
-				[EMULATED_INSTRUCTION_STRREP] = NULL,
+				[EMULATED_INSTRUCTION_SINGLE] = vm_emulated_instruction_ind,
+				[EMULATED_INSTRUCTION_STR] = vm_emulated_instruction_insd,
+				[EMULATED_INSTRUCTION_STRREP] = vm_emulated_instruction_rep_insd,
 			},
 		},
 	};
@@ -107,6 +107,7 @@ static void vmx_vmexit_io(uint64_t exit_qualification, vmx_vmexit_state_t* vm_st
 	}
 
 	if (emulated_io_instruction == NULL) {
+		LOG("VM-exit : qualification unsupported : qualification=%zxpq @ rip=%zxpq", exit_qualification, vm_state->rip);
 		PANIC("unsupported I/O VM-exit qualification");
 	}
 
