@@ -6,7 +6,7 @@ CFLAGS_WARNS:=-Wall -Wextra -Wstrict-prototypes -Wpedantic -Wswitch-enum -Wvla -
               -Wno-language-extension-token
 AFLAGS_WARNS:=-Werror
 
-CFLAGS_FREESTANDING:=-nostdlibinc -ffreestanding -mno-red-zone
+CFLAGS_FREESTANDING:=-nostdlibinc -ffreestanding -mno-red-zone -mno-stack-arg-probe
 LFLAGS_FREESTANDING:=-nostdlib -static
 
 ifdef DEBUG

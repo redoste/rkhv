@@ -6,7 +6,7 @@ BOOT_TARGET?=x86_64-unknown-windows
 
 GNU_EFI_INC:=../vendor/gnu-efi/inc
 BOOT_CPPFLAGS?=-I $(GNU_EFI_INC) -isystem $(GNU_EFI_INC) $(CPPFLAGS_COMMON) -DRKHV_BOOT
-BOOT_CFLAGS?=-target $(BOOT_TARGET) $(CFLAGS_FREESTANDING) -mstack-probe-size=1048576 $(CFLAGS_WARNS) $(CFLAGS_OPT)
+BOOT_CFLAGS?=-target $(BOOT_TARGET) $(CFLAGS_FREESTANDING) $(CFLAGS_WARNS) $(CFLAGS_OPT)
 BOOT_LFLAGS?=-target $(BOOT_TARGET) $(LFLAGS_FREESTANDING) -Wl,-entry:efi_main -Wl,-subsystem:efi_application -fuse-ld=lld-link $(LFLAGS_OPT)
 BOOT_AFLAGS?=-f win64 $(AFLAGS_WARNS)
 
