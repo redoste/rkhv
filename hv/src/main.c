@@ -8,6 +8,7 @@
 #include <rkhv/interrupts.h>
 #include <rkhv/panic.h>
 #include <rkhv/segments.h>
+#include <rkhv/serial.h>
 #include <rkhv/stdio.h>
 
 #include "interrupts.h"
@@ -61,7 +62,8 @@ hvmain(chainload_page_t* chainload_page) {
 	vmx_create_initialized_vmcs(vm);
 	LOG("new initialized VMCS created @ %p", (void*)vm->vmcs_region);
 
-	vm_manager_register_device(vm, vmd_8250uart_create());
+	vm_manager_register_device(vm, vmd_8250uart_create(COM1, "COM1"));
+	vm_manager_register_device(vm, vmd_8250uart_create(COM2, "COM2"));
 
 	vm_manager_launch(vm);
 }
