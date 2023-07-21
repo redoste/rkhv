@@ -5,6 +5,8 @@
 
 #include <rkhv/vmm/vm_manager.h>
 
+#include "vmx_msr.h"
+
 typedef struct vmx_vmexit_reg_state_t {
 	uintptr_t r15;
 	uintptr_t r14;
@@ -33,7 +35,8 @@ typedef struct vmx_vmexit_state_t {
 	uint64_t cr0;
 	uint64_t cr3;
 	uint64_t cr4;
-	uint64_t ia32_efer;
+
+	vmx_msr_state_t msrs;
 } vmx_vmexit_state_t;
 
 void vmx_vmexit(void);
@@ -43,6 +46,8 @@ void vmx_vmexit_handler(vmx_vmexit_reg_state_t* vm_reg_state);
 #define VMEXIT_REASON_HLT            12
 #define VMEXIT_REASON_CR_ACCESSES    28
 #define VMEXIT_REASON_IO_INSTRUCTION 30
+#define VMEXIT_REASON_RDMSR          31
+#define VMEXIT_REASON_WRMSR          32
 
 #define VMEXIT_QUALIFICATION_CR_CRN(x)                  ((x)&0xf)
 #define VMEXIT_QUALIFICATION_CR_ACCESS_TYPE(x)          (((x) >> 4) & 3)

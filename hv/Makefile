@@ -29,6 +29,7 @@ SRCS_C:=src/main.c\
         src/vmm/vmx_ept.c\
         src/vmm/vmx_init.c\
         src/vmm/vmx_instructions.c\
+        src/vmm/vmx_msr.c\
         src/vmm/vmx_vmcs.c\
         src/vmm/vmx_vmexit.c
 SRCS_A:=src/interrupts.asm\

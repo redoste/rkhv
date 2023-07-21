@@ -3,7 +3,15 @@
 
 #include <stdint.h>
 
-#define IA32_EFER                0xc0000080
+#define IA32_BIOS_SIGN_ID      0x8B
+#define IA32_ARCH_CAPABILITIES 0x10A
+#define IA32_MISC_ENABLE       0x1A0
+#define IA32_XSS               0xDA0
+#define IA32_EFER              0xC0000080
+#define IA32_FS_BASE           0xC0000100
+#define IA32_GS_BASE           0xC0000101
+#define IA32_KERNEL_GS_BASE    0xC0000102
+
 #define IA32_VMX_BASIC           0x480
 #define IA32_VMX_PINBASED_CTLS   0x481
 #define IA32_VMX_PROCBASED_CTLS  0x482

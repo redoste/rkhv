@@ -12,6 +12,7 @@
 #include "vm_manager.h"
 #include "vmx_ept.h"
 #include "vmx_instructions.h"
+#include "vmx_msr.h"
 
 static arena_t* vm_manager_arena = NULL;
 vm_t* vm_manager_vm_list = NULL;
@@ -32,11 +33,14 @@ vm_t* vm_manager_create_vmx_machine(const char* name) {
 }
 
 __attribute__((noreturn)) void vm_manager_launch(vm_t* vm) {
+	vmx_msr_vmlaunch();
+
 	LOG("vmptrld-ing  \"%s\" VMCS", vm->name);
 	VMX_ASSERT(vmx_vmptrld(vm->vmcs_region));
 	vm_manager_current_vm = vm;
 	LOG("vmlaunch-ing \"%s\"", vm->name);
 	VMX_ASSERT(vmx_vmlaunch());
+
 	PANIC("vm_launch reached its end");
 }
 

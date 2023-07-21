@@ -1,7 +1,5 @@
 #include <rkhv/cr_msr.h>
-#include <rkhv/mem.h>
 #include <rkhv/memory_map.h>
-#include <rkhv/paging.h>
 #include <rkhv/rflags.h>
 #include <rkhv/stdint.h>
 
@@ -17,16 +15,6 @@
 #include "vmx_instructions.h"
 #include "vmx_vmcs.h"
 #include "vmx_vmexit.h"
-
-void vmx_init_msr_bitmaps(uint8_t* msr_bitmaps) {
-	memset(msr_bitmaps, 0xff, PAGE_SIZE);
-
-	// Allow RDMSR and WRMSR of IA32_EFER
-	size_t ia32_efer_offset = VMCS_MSR_BITMAPS_HIGH_OFFSET(IA32_EFER);
-	uint8_t ia32_efer_mask = ~(1 << VMCS_MSR_BITMAPS_HIGH_SHIFT(IA32_EFER));
-	msr_bitmaps[VMCS_MSR_BITMAPS_READ_HIGH + ia32_efer_offset] &= ia32_efer_mask;
-	msr_bitmaps[VMCS_MSR_BITMAPS_WRITE_HIGH + ia32_efer_offset] &= ia32_efer_mask;
-}
 
 static inline uint32_t vmx_ensure_allowed_bits(uint64_t field_encoding, uint64_t msr, uint32_t mask) {
 	uint64_t msr_value = rdmsr(msr);

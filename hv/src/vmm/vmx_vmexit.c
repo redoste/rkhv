@@ -10,6 +10,7 @@
 #include "vm_emulated_instructions.h"
 #include "vm_manager.h"
 #include "vmx_instructions.h"
+#include "vmx_msr.h"
 #include "vmx_vmcs.h"
 #include "vmx_vmexit.h"
 
@@ -130,7 +131,7 @@ void vmx_vmexit_handler(vmx_vmexit_reg_state_t* vm_reg_state) {
 	VMX_ASSERT(vmx_vmread(VMCS_GUEST_CR0, &vm_state.cr0));
 	VMX_ASSERT(vmx_vmread(VMCS_GUEST_CR3, &vm_state.cr3));
 	VMX_ASSERT(vmx_vmread(VMCS_GUEST_CR4, &vm_state.cr4));
-	VMX_ASSERT(vmx_vmread(VMCS_GUEST_IA32_EFER, &vm_state.ia32_efer));
+	vmx_msr_vmexit(&vm_state);
 
 	switch (exit_reason) {
 		case VMEXIT_REASON_CPUID:
@@ -146,6 +147,16 @@ void vmx_vmexit_handler(vmx_vmexit_reg_state_t* vm_reg_state) {
 		case VMEXIT_REASON_IO_INSTRUCTION:
 			vmx_vmexit_io(exit_qualification, &vm_state);
 			vm_state.rip += instruction_length;
+			break;
+
+		case VMEXIT_REASON_RDMSR:
+			LOG("VM-exit : RDMSR with rcx=%zxpq", vm_state.reg_state->rcx);
+			PANIC("unsupported MSR");
+			break;
+
+		case VMEXIT_REASON_WRMSR:
+			LOG("VM-exit : WRMSR with rcx=%zxpq", vm_state.reg_state->rcx);
+			PANIC("unsupported MSR");
 			break;
 
 		case VMEXIT_REASON_HLT:
@@ -165,5 +176,5 @@ void vmx_vmexit_handler(vmx_vmexit_reg_state_t* vm_reg_state) {
 	VMX_ASSERT(vmx_vmwrite(VMCS_GUEST_CR0, vm_state.cr0));
 	VMX_ASSERT(vmx_vmwrite(VMCS_GUEST_CR3, vm_state.cr3));
 	VMX_ASSERT(vmx_vmwrite(VMCS_GUEST_CR4, vm_state.cr4));
-	VMX_ASSERT(vmx_vmwrite(VMCS_GUEST_IA32_EFER, vm_state.ia32_efer));
+	vmx_msr_vmresume(&vm_state);
 }

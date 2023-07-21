@@ -6,9 +6,8 @@
 #include <rkhv/memory_map.h>
 #include <rkhv/stdint.h>
 
-#include <rkhv/panic.h>
+#include <rkhv/vmm/vmx_msr.h>
 #include <rkhv/vmm/vmx_pages.h>
-#include <rkhv/vmm/vmx_vmcs.h>
 
 #include "memory_management.h"
 #include "vmm_vmx_pages.h"
@@ -53,7 +52,7 @@ uintptr_t vmx_get_msr_bitmaps_page(void) {
 
 	msr_bitmaps_page = mm_get_free_page();
 	msr_bitmaps_page_valid = true;
-	vmx_init_msr_bitmaps(P2V_IDENTITY_MAP(msr_bitmaps_page));
+	vmx_msr_init_bitmaps(P2V_IDENTITY_MAP(msr_bitmaps_page));
 	return msr_bitmaps_page;
 }
 

@@ -132,7 +132,7 @@ void* vm_guest_paging_get_host_virtual_address_during_vmexit(vmx_vmexit_state_t*
 	if (!(vm_state->cr0 & CR0_PG) ||
 	    !(vm_state->cr4 & CR4_PAE) ||
 	    (vm_state->cr4 & CR4_LA57) ||
-	    !(vm_state->ia32_efer & IA32_EFER_LME)) {
+	    !(vm_state->msrs.ia32_efer & IA32_EFER_LME)) {
 		PANIC("Resolving guest virtual address in an unsupported configuration (not long mode with 4-level paging)");
 	}
 	// TODO : Support segmentation when long mode is not enabled
