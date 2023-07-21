@@ -59,25 +59,25 @@
 #define IA32_EFER_LMA (1 << 10)
 #define IA32_EFER_NXE (1 << 11)
 
+/* NOTE : We need to `volatile` these `asm` statements because even with
+ *        the clobber field set, clang wants to optimize away a second read
+ */
+
 static inline uint64_t rdmsr(uint32_t msr) {
 	uint32_t ret_high, ret_low;
-	asm("rdmsr"
-	    : "=d"(ret_high), "=a"(ret_low)
-	    : "c"(msr));
+	asm volatile("rdmsr"
+		     : "=d"(ret_high), "=a"(ret_low)
+		     : "c"(msr));
 	return ((uint64_t)ret_high << 32) | ret_low;
 }
 
 static inline void wrmsr(uint32_t msr, uint64_t value) {
 	uint32_t value_high = value >> 32;
 	uint32_t value_low = value & 0xffffffff;
-	asm("wrmsr"
-	    :
-	    : "d"(value_high), "a"(value_low), "c"(msr));
+	asm volatile("wrmsr"
+		     :
+		     : "d"(value_high), "a"(value_low), "c"(msr));
 }
-
-/* NOTE : We need to `volatile` cr* register reads and writes because even with
- *        the clobber field set, clang wants to optimize away a second read
- */
 
 static inline uint64_t cr0_read(void) {
 	uint64_t ret;
