@@ -55,6 +55,7 @@ typedef struct vm_t {
 
 	uintptr_t vmcs_region;
 	vmx_initial_vmcs_config_t vmcs_config;
+	vmx_initial_gpr_state_t initial_gpr_state;
 
 	size_t guest_physical_pages;
 	/* This is the amount of pages at the end of guest physical memory
