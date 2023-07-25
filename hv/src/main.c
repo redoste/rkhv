@@ -20,6 +20,7 @@
 #include "vmm/vmx_ept.h"
 #include "vmm/vmx_init.h"
 #include "vmm/vmx_vmcs.h"
+#include "xsave.h"
 
 extern void vm_guest_hello_world(void);
 extern size_t vm_guest_hello_world_size;
@@ -29,6 +30,7 @@ __attribute__((noreturn)) void
 hvmain(chainload_page_t* chainload_page) {
 	LOG("rkhv loaded - git:" RKHV_HASH " - chainload_page @ %p", (void*)chainload_page);
 	segments_setup();
+	xsave_setup();
 	interrupts_setup();
 	mm_setup(chainload_page);
 

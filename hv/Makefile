@@ -31,7 +31,8 @@ SRCS_C:=src/main.c\
         src/vmm/vmx_instructions.c\
         src/vmm/vmx_msr.c\
         src/vmm/vmx_vmcs.c\
-        src/vmm/vmx_vmexit.c
+        src/vmm/vmx_vmexit.c\
+        src/xsave.c
 SRCS_A:=src/interrupts.asm\
         src/segments.asm\
         src/vmm/guest_hello_world.asm\

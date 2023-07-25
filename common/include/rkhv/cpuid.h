@@ -5,6 +5,8 @@
 
 #include <rkhv/stdint.h>
 
+#define CPUID_XSAVE_LEAF 0x0D
+
 static inline void cpuid(uint32_t input_eax, uint32_t input_ecx, uint32_t* eax, uint32_t* ebx, uint32_t* ecx, uint32_t* edx) {
 	uint32_t ignored;
 	if (eax == NULL) {
