@@ -51,20 +51,30 @@ extern xsave_area_size
 %macro isr_stub 1
 isr_stub_%1:
 	isr_backup_regs
-	mov rdi, %1
 	mov rsi, rsp
 
+	mov rcx, [rel xsave_area_size]
+
 	mov rbx, rsp
-	sub rsp, [rel xsave_area_size]
+	sub rsp, rcx
 	and rsp, 0xffffffffffffffc0 ; The XSAVE area must be 64-byte aligned
 
+	; NOTE : We need to zero the XSAVE area before use since xsave doesn't properly
+	;        fill with zeros the XSAVE header, which can cause xrstor to #GP
+	; See Intel Manual Volume 1 : Chapter 13.7 : Operation of XSAVE
+	; > The XSAVE instruction does not write any part of the XSAVE header other than the
+	; > XSTATE_BV field; in particular, it does *not* write to the XCOMP_BV field.
 	xor eax, eax
+	mov rdi, rsp
+	rep stosb
+
 	not eax
 	mov edx, eax
 	xsave [rsp]
 
 	mov rbp, rsp
 	and rsp, 0xfffffffffffffff0 ; Clang expect 16-byte aligned stack for doing its XMM shenanigans
+	mov rdi, %1
 	call interrupts_handler
 	mov rsp, rbp
 
