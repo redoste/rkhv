@@ -2,6 +2,7 @@ bits 64
 section .text
 
 extern vmx_vmexit_handler
+extern xsave_area_size
 
 global vmx_vmexit
 vmx_vmexit:
@@ -20,13 +21,39 @@ vmx_vmexit:
 	push r13
 	push r14
 	push r15
-	; TODO : We should probably backup XMM (and maybe others ?) registers
 
+	mov rcx, [rel xsave_area_size]
+
+	mov rbx, rsp
+	sub rsp, rcx
+	and rsp, 0xffffffffffffffc0 ; The XSAVE area must be 64-byte aligned
+
+	; NOTE : We need to zero the XSAVE area before use since xsave doesn't properly
+	;        fill with zeros the XSAVE header, which can cause xrstor to #GP
+	; See Intel Manual Volume 1 : Chapter 13.7 : Operation of XSAVE
+	; > The XSAVE instruction does not write any part of the XSAVE header other than the
+	; > XSTATE_BV field; in particular, it does *not* write to the XCOMP_BV field.
+	xor eax, eax
 	mov rdi, rsp
+	rep stosb
+
+	not eax
+	mov edx, eax
+	xsave [rsp]
+
+	mov rdi, rbx
+	mov rsi, rsp
+
 	mov rbp, rsp
 	and rsp, 0xfffffffffffffff0 ; Clang expect 16-byte aligned stack for doing its XMM shenanigans
 	call vmx_vmexit_handler
 	mov rsp, rbp
+
+	xor eax, eax
+	not eax
+	mov edx, eax
+	xrstor [rsp]
+	mov rsp, rbx
 
 	pop r15
 	pop r14

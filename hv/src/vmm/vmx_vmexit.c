@@ -115,7 +115,7 @@ static void vmx_vmexit_io(uint64_t exit_qualification, vmx_vmexit_state_t* vm_st
 	emulated_io_instruction(vm_state, VMEXIT_QUALIFICATION_IO_PORT(exit_qualification));
 }
 
-void vmx_vmexit_handler(vmx_vmexit_reg_state_t* vm_reg_state) {
+void vmx_vmexit_handler(vmx_vmexit_reg_state_t* vm_reg_state, void* vm_xsave_area) {
 	uint64_t exit_reason, exit_qualification, instruction_length;
 	VMX_ASSERT(vmx_vmread(VMCS_EXIT_REASON, &exit_reason));
 	VMX_ASSERT(vmx_vmread(VMCS_EXIT_QUALIFICATION, &exit_qualification));
@@ -124,6 +124,7 @@ void vmx_vmexit_handler(vmx_vmexit_reg_state_t* vm_reg_state) {
 	vmx_vmexit_state_t vm_state = {
 		.vm = vm_manager_get_current_vm(),
 		.reg_state = vm_reg_state,
+		.xsave_area = vm_xsave_area,
 	};
 	VMX_ASSERT(vmx_vmread(VMCS_GUEST_RIP, &vm_state.rip));
 	VMX_ASSERT(vmx_vmread(VMCS_GUEST_RSP, &vm_state.rsp));
