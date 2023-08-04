@@ -162,6 +162,7 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_table) {
 		uint32_t desc_ver;
 
 		EFI_ST->BootServices->GetMemoryMap(&mmap_size, NULL, &mmap_key, &desc_size, &desc_ver);
+		mmap_size += 4 * desc_size;  // We add 4 descriptors to be safe as they can be used by the following AllocatePool
 		VERIFY_EFI(EFI_ST->BootServices->AllocatePool(EfiLoaderData, mmap_size, (void**)&mmap));
 		VERIFY_EFI(EFI_ST->BootServices->GetMemoryMap(&mmap_size, mmap, &mmap_key, &desc_size, &desc_ver));
 
