@@ -12,4 +12,9 @@ EFI_STATUS fs_read_entier_file_to_pages(EFI_FILE_PROTOCOL* volume,
 					size_t pages,
 					void** physical_address,
 					size_t* read_bytes);
+EFI_STATUS fs_read_attachment(EFI_FILE_PROTOCOL* volume,
+			      const CHAR16* filename,
+			      void** physical_address,
+			      size_t* attachment_size);
+
 #endif

@@ -77,6 +77,47 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_table) {
 		chainload_page->rkhv_sections[section_index].physical_address = (uintptr_t)physical_address;
 		chainload_page->rkhv_sections[section_index].pages = total_size_in_pages;
 	}
+
+	const struct {
+		const CHAR16* filename;
+		chainload_attachment_type_t type;
+	} attachments[RKHV_MAX_ATTACHMENTS] = {
+		{u"\\" RKHV_EFI_PATH "\\linux-bzImage", CHAINLOAD_ATTACHMENT_LINUX_BZIMAGE},
+		{NULL, CHAINLOAD_ATTACHMENT_END},
+	};
+	for (size_t attachment_index = 0; attachment_index < sizeof(attachments) / sizeof(attachments[0]); attachment_index++) {
+		const CHAR16* filename = attachments[attachment_index].filename;
+		chainload_attachment_type_t type = attachments[attachment_index].type;
+		if (filename == NULL || type == CHAINLOAD_ATTACHMENT_END) {
+			chainload_page->attachments[attachment_index].attachment_type = CHAINLOAD_ATTACHMENT_END;
+			break;
+		}
+
+		VERIFY_EFI(stdio_puts(u"Loading attachment "));
+		VERIFY_EFI(stdio_puts(filename));
+		VERIFY_EFI(stdio_puts(u"..."));
+
+		size_t attachment_size;
+		void* physical_address;
+		EFI_STATUS read_attachment_ret = fs_read_attachment(volume, filename, &physical_address, &attachment_size);
+		if (read_attachment_ret == EFI_NOT_FOUND) {
+			VERIFY_EFI(stdio_puts(u" : Not Found\r\n"));
+			chainload_page->attachments[attachment_index].size = 0;
+			chainload_page->attachments[attachment_index].attachment_type = type;
+		} else {
+			VERIFY_EFI(read_attachment_ret);
+
+			CHAR16 buffer[] = u" : 0xxxxxxxxx B @ 0xxxxxxxxxxxxxxxxx physical\r\n";
+			str_itouh(&buffer[5], attachment_size, 8);
+			str_itouh(&buffer[20], (uintptr_t)physical_address, 16);
+			VERIFY_EFI(stdio_puts(buffer));
+
+			chainload_page->attachments[attachment_index].physical_address = (uintptr_t)physical_address;
+			chainload_page->attachments[attachment_index].size = attachment_size;
+			chainload_page->attachments[attachment_index].attachment_type = type;
+		}
+	}
+
 	VERIFY_EFI(volume->Close(volume));
 
 	paging_page_table_pool_t page_table_pool = {

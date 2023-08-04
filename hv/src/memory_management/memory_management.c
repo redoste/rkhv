@@ -1,4 +1,7 @@
+#include <stddef.h>
+
 #include <rkhv/chainload.h>
+#include <rkhv/memory_map.h>
 #include <rkhv/paging.h>
 #include <rkhv/stdint.h>
 
@@ -13,6 +16,25 @@
 
 static chainload_page_t* mm_chainload_page;
 
+uint8_t* mm_get_attachment(chainload_attachment_type_t attachment_type, size_t* attachment_size) {
+	for (size_t attachment_index = 0; attachment_index < RKHV_MAX_ATTACHMENTS; attachment_index++) {
+		chainload_attachment_t* iter = &mm_chainload_page->attachments[attachment_index];
+		if (iter->attachment_type == CHAINLOAD_ATTACHMENT_END) {
+			break;
+		}
+		if (iter->attachment_type == attachment_type) {
+			if (iter->size == 0) {
+				break;
+			}
+			*attachment_size = iter->size;
+			return P2V_IDENTITY_MAP(iter->physical_address);
+		}
+	}
+
+	*attachment_size = 0;
+	return NULL;
+}
+
 static bool mm_page_used_by_chainload(uintptr_t page_physical_address) {
 	page_physical_address &= PAGE_MASK;
 
@@ -25,6 +47,21 @@ static bool mm_page_used_by_chainload(uintptr_t page_physical_address) {
 			uintptr_t section_first_page = mm_chainload_page->rkhv_sections[section_index].physical_address;
 			uintptr_t section_last_page = section_first_page + ((mm_chainload_page->rkhv_sections[section_index].pages - 1) * PAGE_SIZE);
 			if (page_physical_address >= section_first_page && page_physical_address <= section_last_page) {
+				return true;
+			}
+		}
+	}
+
+	for (size_t attachment_index = 0; attachment_index < RKHV_MAX_ATTACHMENTS; attachment_index++) {
+		chainload_attachment_t* iter = &mm_chainload_page->attachments[attachment_index];
+		if (iter->attachment_type == CHAINLOAD_ATTACHMENT_END) {
+			break;
+		}
+		if (iter->size > 0) {
+			size_t pages = (iter->size / PAGE_SIZE) + (iter->size % PAGE_SIZE == 0 ? 0 : 1);
+			uintptr_t attachment_first_page = iter->physical_address;
+			uintptr_t attachment_last_page = attachment_first_page + ((pages - 1) * PAGE_SIZE);
+			if (page_physical_address >= attachment_first_page && page_physical_address <= attachment_last_page) {
 				return true;
 			}
 		}

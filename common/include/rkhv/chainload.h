@@ -10,7 +10,8 @@
 
 #define RKHV_MAX_SECTIONS             4
 #define RKHV_MAX_PAGE_TABLE_REGIONS   16
-#define RKHV_MAX_EFI_MMAP_DESCRIPTORS 235
+#define RKHV_MAX_ATTACHMENTS          4
+#define RKHV_MAX_EFI_MMAP_DESCRIPTORS 231
 
 typedef struct __attribute__((packed)) chainload_mmap_desc_t {
 	uintptr_t physical_address;
@@ -26,6 +27,17 @@ typedef struct __attribute__((packed)) chainload_page_table_region_t {
 	size_t pages;
 } chainload_page_table_region_t;
 
+typedef enum __attribute__((packed)) chainload_attachment_type_t {
+	CHAINLOAD_ATTACHMENT_END = 0,
+	CHAINLOAD_ATTACHMENT_LINUX_BZIMAGE = 0x4c,  // 'L'
+} chainload_attachment_type_t;
+
+typedef struct __attribute__((packed)) chainload_attachment_t {
+	uintptr_t physical_address;
+	size_t size : 56;
+	size_t attachment_type : 8;
+} chainload_attachment_t;
+
 typedef struct __attribute__((packed)) chainload_page_t {
 	struct {
 		uintptr_t physical_address;
@@ -35,6 +47,7 @@ typedef struct __attribute__((packed)) chainload_page_t {
 		uintptr_t physical_address;
 	} chainload_page;
 	uintptr_t _pad;
+	chainload_attachment_t attachments[RKHV_MAX_ATTACHMENTS];
 	chainload_page_table_region_t page_table_regions[RKHV_MAX_PAGE_TABLE_REGIONS];
 	chainload_mmap_desc_t efi_mmap_usable[RKHV_MAX_EFI_MMAP_DESCRIPTORS];
 } chainload_page_t;
