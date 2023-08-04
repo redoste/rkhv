@@ -29,4 +29,6 @@ void vm_emulated_instruction_rep_insb(vmx_vmexit_state_t* vm_state, uint16_t por
 void vm_emulated_instruction_rep_insw(vmx_vmexit_state_t* vm_state, uint16_t port);
 void vm_emulated_instruction_rep_insd(vmx_vmexit_state_t* vm_state, uint16_t port);
 
+void vm_emulated_instruction_xsetbv(vmx_vmexit_state_t* vm_state);
+
 #endif

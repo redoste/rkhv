@@ -49,6 +49,7 @@ vm_permanent_state_t* vmx_vmexit_handler(vmx_vmexit_reg_state_t* vm_reg_state, v
 #define VMEXIT_REASON_IO_INSTRUCTION 30
 #define VMEXIT_REASON_RDMSR          31
 #define VMEXIT_REASON_WRMSR          32
+#define VMEXIT_REASON_XSETBV         55
 
 #define VMEXIT_QUALIFICATION_CR_CRN(x)                  ((x)&0xf)
 #define VMEXIT_QUALIFICATION_CR_ACCESS_TYPE(x)          (((x) >> 4) & 3)

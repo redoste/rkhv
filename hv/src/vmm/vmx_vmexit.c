@@ -160,6 +160,11 @@ vm_permanent_state_t* vmx_vmexit_handler(vmx_vmexit_reg_state_t* vm_reg_state, v
 			PANIC("unsupported MSR");
 			break;
 
+		case VMEXIT_REASON_XSETBV:
+			vm_emulated_instruction_xsetbv(&vm_state);
+			vm_state.rip += instruction_length;
+			break;
+
 		case VMEXIT_REASON_HLT:
 			LOG("VM-exit : VM \"%s\" halted @ rip=%zxpq", vm_state.vm->name, vm_state.rip);
 			PANIC("VM halted");

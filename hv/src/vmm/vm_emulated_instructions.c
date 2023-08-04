@@ -7,6 +7,7 @@
 #define LOG_CATEGORY "vm"
 #include <rkhv/panic.h>
 #include <rkhv/stdio.h>
+#include <rkhv/xsave.h>
 
 #include "vm_emulated_instructions.h"
 #include "vm_guest_paging.h"
@@ -114,3 +115,24 @@ VM_EMULATED_INSTRUCTION_IO_STRREP(out, d)
 VM_EMULATED_INSTRUCTION_IO_STRREP(in, b)
 VM_EMULATED_INSTRUCTION_IO_STRREP(in, w)
 VM_EMULATED_INSTRUCTION_IO_STRREP(in, d)
+
+void vm_emulated_instruction_xsetbv(vmx_vmexit_state_t* vm_state) {
+	if (vm_state->reg_state->rcx != 0) {
+		PANIC("unsupported XCR specified by RCX on emulated XSETBV");
+	}
+
+	uint64_t new_xcr0 = (vm_state->reg_state->rdx << 32) | (vm_state->reg_state->rax & 0xffffffff);
+	if ((new_xcr0 & 1) != 1) {
+		PANIC("new guest XCR0 doesn't have bit 0 set");
+	}
+	if ((new_xcr0 & (~xsave_host_xcr0)) != 0 ||
+	    (new_xcr0 & 0x6) == 0x4)  // XCR0[2:1] == 0b10
+	{
+		PANIC("new guest XCR0 set unsupported bits");
+	}
+
+	// TODO : We should replace these PANICs for a #GP
+	// TODO : We should probably check the CPL
+
+	vm_state->vm->permanent_state.xcr0 = new_xcr0;
+}
