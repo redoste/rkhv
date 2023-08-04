@@ -1,9 +1,9 @@
 #include <stdarg.h>
 
 #include <rkhv/stdio.h>
+#include <rkhv/string.h>
 
 #include "serial.h"
-#include "string.h"
 
 static inline void stdio_putc(const char c) {
 	serial_write_byte(c);

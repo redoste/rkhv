@@ -4,7 +4,7 @@
 
 #include <rkhv/stdint.h>
 
-#include "string.h"
+#include <rkhv/string.h>
 
 char* str_itoh(char* out_string, uintptr_t value, size_t size) {
 	char* trimmed_start = NULL;
