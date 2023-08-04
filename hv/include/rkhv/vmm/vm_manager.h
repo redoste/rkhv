@@ -45,6 +45,13 @@ typedef struct vm_device_t {
 	vm_device_ind_handler_t ind_handler;
 } vm_device_t;
 
+/* vm_permanent_state_t stores the part of the state of an already launched VM that
+ * can't be dropped once the VM-exit handler returns
+ */
+typedef struct vm_permanent_state_t {
+	uint64_t xcr0;
+} vm_permanent_state_t;
+
 /* TODO : Find a clean way to make this structure easily adaptable to
  *        other virtualization extensions (such as AMD SVM)
  */
@@ -67,6 +74,8 @@ typedef struct vm_t {
 	vm_page_list_t* tracked_pages;
 
 	vm_device_t* devices;
+
+	vm_permanent_state_t permanent_state;
 } vm_t;
 
 extern vm_t* vm_manager_vm_list;

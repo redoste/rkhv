@@ -3,6 +3,7 @@ section .text
 
 extern vmx_vmexit_handler
 extern xsave_area_size
+extern xsave_host_xcr0
 
 global vmx_vmexit
 vmx_vmexit:
@@ -21,6 +22,14 @@ vmx_vmexit:
 	push r13
 	push r14
 	push r15
+
+	; We restore the host XCR0 before using xsave to make sure we properly save
+	; all the expected states
+	mov rdx, [rel xsave_host_xcr0]
+	mov eax, edx
+	shr rdx, 32
+	xor ecx, ecx
+	xsetbv
 
 	mov rcx, [rel xsave_area_size]
 
@@ -47,6 +56,7 @@ vmx_vmexit:
 	mov rbp, rsp
 	and rsp, 0xfffffffffffffff0 ; Clang expect 16-byte aligned stack for doing its XMM shenanigans
 	call vmx_vmexit_handler
+	mov rdi, rax ; vmx_vmexit_handler returns a vm_permanent_state_t*
 	mov rsp, rbp
 
 	xor eax, eax
@@ -54,6 +64,12 @@ vmx_vmexit:
 	mov edx, eax
 	xrstor [rsp]
 	mov rsp, rbx
+
+	mov rdx, [rdi + 0]
+	mov eax, edx
+	shr rdx, 32
+	xor ecx, ecx
+	xsetbv
 
 	pop r15
 	pop r14

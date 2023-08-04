@@ -41,7 +41,7 @@ typedef struct vmx_vmexit_state_t {
 } vmx_vmexit_state_t;
 
 void vmx_vmexit(void);
-void vmx_vmexit_handler(vmx_vmexit_reg_state_t* vm_reg_state, void* vm_xsave_area);
+vm_permanent_state_t* vmx_vmexit_handler(vmx_vmexit_reg_state_t* vm_reg_state, void* vm_xsave_area);
 
 #define VMEXIT_REASON_CPUID          10
 #define VMEXIT_REASON_HLT            12

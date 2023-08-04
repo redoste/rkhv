@@ -29,6 +29,12 @@ vm_t* vm_manager_create_vmx_machine(const char* name) {
 	vm_manager_vm_list = result;
 
 	result->name = name;
+	/* TODO : This might not the be the best function for setting the inital value of XCR0
+	 *        It doesn't matter as for now this value shouldn't change
+	 *        Maybe this will be moved to a more complex initialization routine of the
+	 *        permanent_state if the structure gets bigger
+	 */
+	result->permanent_state.xcr0 = 1;
 	return result;
 }
 
@@ -39,7 +45,7 @@ __attribute__((noreturn)) void vm_manager_launch(vm_t* vm) {
 	VMX_ASSERT(vmx_vmptrld(vm->vmcs_region));
 	vm_manager_current_vm = vm;
 	LOG("vmlaunch-ing \"%s\"", vm->name);
-	VMX_ASSERT(vmx_vmlaunch(&vm->initial_gpr_state));
+	VMX_ASSERT(vmx_vmlaunch(&vm->initial_gpr_state, &vm->permanent_state));
 
 	PANIC("vm_launch reached its end");
 }

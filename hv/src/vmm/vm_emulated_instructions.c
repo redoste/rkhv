@@ -23,6 +23,7 @@ void vm_emulated_instruction_cpuid(vmx_vmexit_state_t* vm_state) {
 		return;
 	}
 
+	// TODO : make CPUID.(EAX=0DH,ECX=0).EBX dependent of guest XCR0
 	// TODO : add a way to customize `cpuid`
 	asm("cpuid"
 	    : "=a"(vm_state->reg_state->rax), "=b"(vm_state->reg_state->rbx), "=c"(vm_state->reg_state->rcx), "=d"(vm_state->reg_state->rdx)

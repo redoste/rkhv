@@ -84,6 +84,13 @@ vmx_vmlaunch:
 	xrstor [rsp]
 	mov rsp, rbp
 
+	; We received a vm_permanent_state_t as the second argument
+	mov rdx, [rsi + 0]
+	mov eax, edx
+	shr rdx, 32
+	xor ecx, ecx
+	xsetbv
+
 	; We received a vmx_initial_gpr_state_t as the first argument
 	mov r15, [rbx +  0*8]
 	mov r14, [rbx +  1*8]
