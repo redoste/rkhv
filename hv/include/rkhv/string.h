@@ -29,4 +29,6 @@ void str_printf_core(const char* fmt,
 		     str_printf_char_handler char_handler,
 		     str_printf_string_handler string_handler);
 
+size_t str_strlen(const char* s);
+
 #endif

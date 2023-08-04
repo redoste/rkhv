@@ -106,3 +106,10 @@ void str_printf_core(const char* fmt,
 		}
 	}
 }
+
+size_t str_strlen(const char* s) {
+	size_t n = 0;
+	for (; *s != '\0'; s++)
+		n++;
+	return n;
+}
