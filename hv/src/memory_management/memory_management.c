@@ -103,6 +103,9 @@ uintptr_t mm_get_free_page(void) {
 	size_t current_region_index = (size_t)-1;
 	size_t current_page_index = (size_t)-1;
 
+	size_t complete_loop_region_index = (size_t)-1;
+	size_t complete_loop_page_index = (size_t)-1;
+
 	if (last_returned_region_index == (size_t)-1 || last_returned_page_index == (size_t)-1) {
 		for (size_t i = RKHV_MAX_EFI_MMAP_DESCRIPTORS - 1; i >= 0; i--) {
 			if (mm_chainload_page->efi_mmap_usable[i].usable && mm_chainload_page->efi_mmap_usable[i].pages != 0) {
@@ -120,7 +123,12 @@ uintptr_t mm_get_free_page(void) {
 		PANIC("Unable to find usable memory region");
 	}
 
-	while (true) {
+	while (current_region_index != complete_loop_region_index || current_page_index != complete_loop_page_index) {
+		if (complete_loop_region_index == (size_t)-1 || complete_loop_page_index == (size_t)-1) {
+			complete_loop_region_index = current_region_index;
+			complete_loop_page_index = current_page_index;
+		}
+
 		uintptr_t current_page = mm_chainload_page->efi_mmap_usable[current_region_index].physical_address +
 					 current_page_index * PAGE_SIZE;
 		if (mm_page_is_free(current_page)) {
@@ -147,7 +155,8 @@ uintptr_t mm_get_free_page(void) {
 			} while (current_page_index == (size_t)-1);
 		}
 	}
-	// TODO : detect OOM : currently this will loop endlessly
+
+	PANIC("OOM :(");
 }
 
 void mm_setup(chainload_page_t* chainload_page) {
