@@ -1,6 +1,8 @@
 #ifndef COMMON_VM_MANAGER
 #define COMMON_VM_MANAGER
 
+#include <stdbool.h>
+
 #include <rkhv/assert.h>
 
 #include <rkhv/vmm/vmx_vmcs.h>
@@ -17,7 +19,8 @@ typedef struct __attribute__((packed)) vm_page_list_t {
 	struct vm_page_list_t* next;
 	uintptr_t physical_address;
 	size_t pages : 56;
-	vm_page_type_t page_type : 8;
+	vm_page_type_t page_type : 7;
+	bool reserved_pool : 1;
 } vm_page_list_t;
 static_assert(sizeof(vm_page_list_t) == 3 * sizeof(uintptr_t), "vm_page_list_t isn't properly packed");
 

@@ -8,6 +8,7 @@
 #include <rkhv/arena.h>
 #include <rkhv/panic.h>
 #include <rkhv/stdio.h>
+#include <rkhv/vmm/vmx_pages.h>
 
 #include "vm_manager.h"
 #include "vmx_ept.h"
@@ -60,9 +61,16 @@ vm_t* vm_manager_get_current_vm(void) {
 	return vm_manager_current_vm;
 }
 
-static void vm_manager_track_page(vm_t* vm, uintptr_t physical_address, vm_page_type_t page_type) {
+static void vm_manager_track_page(vm_t* vm, uintptr_t physical_address, vm_page_type_t page_type, bool reserved_pool) {
+	vm_page_list_t* new_list = NULL;
 	for (vm_page_list_t* iter = vm->tracked_pages; iter != NULL; iter = iter->next) {
-		if (iter->page_type != page_type) {
+		if (iter->pages == 0) {
+			if (new_list == NULL) {
+				new_list = iter;
+			}
+			continue;
+		}
+		if (iter->page_type != page_type || iter->reserved_pool != reserved_pool) {
 			continue;
 		}
 
@@ -83,17 +91,44 @@ static void vm_manager_track_page(vm_t* vm, uintptr_t physical_address, vm_page_
 		}
 	}
 
-	vm_page_list_t* new_list = (vm_page_list_t*)arena_allocate(vm_manager_arena, sizeof(vm_page_list_t));
+	if (new_list == NULL) {
+		new_list = (vm_page_list_t*)arena_allocate(vm_manager_arena, sizeof(vm_page_list_t));
+		new_list->next = vm->tracked_pages;
+		vm->tracked_pages = new_list;
+	}
 	new_list->physical_address = physical_address;
 	new_list->pages = 1;
 	new_list->page_type = page_type;
+	new_list->reserved_pool = reserved_pool;
+}
 
-	new_list->next = vm->tracked_pages;
-	vm->tracked_pages = new_list;
+static bool vm_manager_untrack_page_from_reserved_pool(vm_t* vm, uintptr_t* physical_address, vm_page_type_t page_type) {
+	for (vm_page_list_t* iter = vm->tracked_pages; iter != NULL; iter = iter->next) {
+		if (iter->page_type != page_type || !iter->reserved_pool || iter->pages == 0) {
+			/* vm_page_list_t with 0 pages remaining will be repurposed by vm_manager_track_page
+			 * since we can't free them anyway
+			 */
+			continue;
+		}
+
+		*physical_address = iter->physical_address + ((iter->pages - 1) * PAGE_SIZE);
+		iter->pages--;
+		return true;
+	}
+	return false;
 }
 
 void vm_manager_track_ept_page(vm_t* vm, const uint64_t* ept_page) {
-	vm_manager_track_page(vm, V2P_IDENTITY_MAP(ept_page), VM_PAGE_TYPE_EPT);
+	vm_manager_track_page(vm, V2P_IDENTITY_MAP(ept_page), VM_PAGE_TYPE_EPT, false);
+}
+
+bool vm_manager_untrack_ept_page_from_reserved_pool(vm_t* vm, uint64_t** ept_page) {
+	uintptr_t physical_address;
+	bool ret = vm_manager_untrack_page_from_reserved_pool(vm, &physical_address, VM_PAGE_TYPE_EPT);
+	if (ret) {
+		*ept_page = P2V_IDENTITY_MAP(physical_address);
+	}
+	return ret;
 }
 
 void vm_manager_allocate_guest_physical_memory(vm_t* vm, size_t guest_physical_pages) {
@@ -101,9 +136,22 @@ void vm_manager_allocate_guest_physical_memory(vm_t* vm, size_t guest_physical_p
 		PANIC("Reallocating guest physical memory on a VM with memory already allocated");
 	}
 	vm->guest_physical_pages = guest_physical_pages;
+
+#define CEIL_DIV(a, b) (((a) / (b)) + ((a) % (b) == 0 ? 0 : 1))
+	size_t ept_amount_pt = CEIL_DIV(guest_physical_pages, PAGE_TABLE_ENTRIES);
+	size_t ept_amount_pd = CEIL_DIV(ept_amount_pt, PAGE_TABLE_ENTRIES);
+	size_t ept_amount_pdpt = CEIL_DIV(ept_amount_pd, PAGE_TABLE_ENTRIES);
+	size_t ept_amount_pml4 = CEIL_DIV(ept_amount_pdpt, PAGE_TABLE_ENTRIES);
+	size_t ept_pages = ept_amount_pt + ept_amount_pd + ept_amount_pdpt + ept_amount_pml4;
+#undef CEIL_DIV
+	for (size_t i = 0; i < ept_pages; i++) {
+		uintptr_t ept_page_pa = V2P_IDENTITY_MAP(vmx_get_free_ept_page());
+		vm_manager_track_page(vm, ept_page_pa, VM_PAGE_TYPE_EPT, true);
+	}
+
 	for (size_t i = 0; i < guest_physical_pages; i++) {
 		uintptr_t page_pa = vm_manager_get_free_guest_physical_page();
-		vm_manager_track_page(vm, page_pa, VM_PAGE_TYPE_GUEST_PHYSICAL);
+		vm_manager_track_page(vm, page_pa, VM_PAGE_TYPE_GUEST_PHYSICAL, false);
 		vmx_ept_map_page(vm, i * PAGE_SIZE, page_pa);
 	}
 }
