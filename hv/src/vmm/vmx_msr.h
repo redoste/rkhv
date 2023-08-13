@@ -13,7 +13,6 @@
 
 /* VMCS : backed up and restored by VMX itself on VM-exit and VM-entry
  * RWBK : backed up and restored by vmx_msr_vmexit and vmx_msr_vmresume
- * RO   : read-only MSRs
  */
 
 #define VMX_MSR_LIST                                           \
@@ -23,18 +22,15 @@
 	X_RWBK(IA32_MISC_ENABLE, ia32_misc_enable)             \
 	X_RWBK(IA32_BIOS_SIGN_ID, ia32_bios_sign_id)           \
 	X_RWBK(IA32_XSS, ia32_xss)                             \
-	X_RWBK(IA32_KERNEL_GS_BASE, ia32_kernel_gs_base)       \
-	X_RO(IA32_ARCH_CAPABILITIES)
+	X_RWBK(IA32_KERNEL_GS_BASE, ia32_kernel_gs_base)
 
 #define X_VMCS(addr, name, vmcs) uint64_t name;
 #define X_RWBK(addr, name)       uint64_t name;
-#define X_RO(addr)
 typedef struct vmx_msr_state_t {
 	VMX_MSR_LIST
 } vmx_msr_state_t;
 #undef X_VMCS
 #undef X_RWBK
-#undef X_RO
 
 typedef struct vmx_vmexit_state_t vmx_vmexit_state_t;
 

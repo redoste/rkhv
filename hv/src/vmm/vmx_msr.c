@@ -14,32 +14,28 @@
 static vmx_msr_state_t vmx_msr_host_backup;
 
 void vmx_msr_init_bitmaps(uint8_t* msr_bitmaps) {
-	memset(msr_bitmaps, 0xff, PAGE_SIZE);
+	// NOTE : For now we will mark all MSRs readable for the sake of simplicity
+	memset(msr_bitmaps + VMCS_MSR_BITMAPS_READ_LOW, 0, PAGE_SIZE / 4);
+	memset(msr_bitmaps + VMCS_MSR_BITMAPS_READ_HIGH, 0, PAGE_SIZE / 4);
+	memset(msr_bitmaps + VMCS_MSR_BITMAPS_WRITE_LOW, 0xff, PAGE_SIZE / 4);
+	memset(msr_bitmaps + VMCS_MSR_BITMAPS_WRITE_HIGH, 0xff, PAGE_SIZE / 4);
 
-#define X_ALLOW_MSR(addr, rw)                                                       \
+#define X_ALLOW_MSR(addr)                                                           \
 	if (addr < VMCS_MSR_BITMAPS_HIGH_BASE) {                                    \
 		size_t offset = VMCS_MSR_BITMAPS_LOW_OFFSET(addr);                  \
 		uint8_t mask = (uint8_t) ~(1 << VMCS_MSR_BITMAPS_LOW_SHIFT(addr));  \
-		msr_bitmaps[VMCS_MSR_BITMAPS_READ_LOW + offset] &= mask;            \
-		if (rw) {                                                           \
-			msr_bitmaps[VMCS_MSR_BITMAPS_WRITE_LOW + offset] &= mask;   \
-		}                                                                   \
+		msr_bitmaps[VMCS_MSR_BITMAPS_WRITE_LOW + offset] &= mask;           \
 	} else {                                                                    \
 		size_t offset = VMCS_MSR_BITMAPS_HIGH_OFFSET(addr);                 \
 		uint8_t mask = (uint8_t) ~(1 << VMCS_MSR_BITMAPS_HIGH_SHIFT(addr)); \
-		msr_bitmaps[VMCS_MSR_BITMAPS_READ_HIGH + offset] &= mask;           \
-		if (rw) {                                                           \
-			msr_bitmaps[VMCS_MSR_BITMAPS_WRITE_HIGH + offset] &= mask;  \
-		}                                                                   \
+		msr_bitmaps[VMCS_MSR_BITMAPS_WRITE_HIGH + offset] &= mask;          \
 	}
 
-#define X_VMCS(addr, name, vmcs) X_ALLOW_MSR(addr, 1)
-#define X_RWBK(addr, name)       X_ALLOW_MSR(addr, 1)
-#define X_RO(addr)               X_ALLOW_MSR(addr, 0)
+#define X_VMCS(addr, name, vmcs) X_ALLOW_MSR(addr)
+#define X_RWBK(addr, name)       X_ALLOW_MSR(addr)
 	VMX_MSR_LIST
 #undef X_VMCS
 #undef X_RWBK
-#undef X_RO
 
 #undef X_ALLOW_MSR
 }
@@ -52,11 +48,9 @@ void vmx_msr_vmlaunch(void) {
 #define X_VMCS(addr, name, vmcs)
 #define X_RWBK(addr, name) \
 	vmx_msr_host_backup.name = rdmsr(addr);
-#define X_RO(addr)
 	VMX_MSR_LIST
 #undef X_VMCS
 #undef X_RWBK
-#undef X_RO
 }
 
 void vmx_msr_vmexit(vmx_vmexit_state_t* vm_state) {
@@ -71,11 +65,9 @@ void vmx_msr_vmexit(vmx_vmexit_state_t* vm_state) {
 #define X_RWBK(addr, name)                 \
 	vm_state->msrs.name = rdmsr(addr); \
 	wrmsr(addr, vmx_msr_host_backup.name);
-#define X_RO(addr)
 	VMX_MSR_LIST
 #undef X_VMCS
 #undef X_RWBK
-#undef X_RO
 }
 
 void vmx_msr_vmresume(vmx_vmexit_state_t* vm_state) {
@@ -90,9 +82,7 @@ void vmx_msr_vmresume(vmx_vmexit_state_t* vm_state) {
 #define X_RWBK(addr, name)                      \
 	vmx_msr_host_backup.name = rdmsr(addr); \
 	wrmsr(addr, vm_state->msrs.name);
-#define X_RO(addr)
 	VMX_MSR_LIST
 #undef X_VMCS
 #undef X_RWBK
-#undef X_RO
 }
