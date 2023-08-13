@@ -16,21 +16,21 @@ static vmx_msr_state_t vmx_msr_host_backup;
 void vmx_msr_init_bitmaps(uint8_t* msr_bitmaps) {
 	memset(msr_bitmaps, 0xff, PAGE_SIZE);
 
-#define X_ALLOW_MSR(addr, rw)                                                      \
-	if (addr < VMCS_MSR_BITMAPS_HIGH_BASE) {                                   \
-		size_t offset = VMCS_MSR_BITMAPS_LOW_OFFSET(addr);                 \
-		uint8_t mask = ~(1 << VMCS_MSR_BITMAPS_LOW_SHIFT(addr));           \
-		msr_bitmaps[VMCS_MSR_BITMAPS_READ_LOW + offset] &= mask;           \
-		if (rw) {                                                          \
-			msr_bitmaps[VMCS_MSR_BITMAPS_WRITE_LOW + offset] &= mask;  \
-		}                                                                  \
-	} else {                                                                   \
-		size_t offset = VMCS_MSR_BITMAPS_HIGH_OFFSET(addr);                \
-		uint8_t mask = ~(1 << VMCS_MSR_BITMAPS_HIGH_SHIFT(addr));          \
-		msr_bitmaps[VMCS_MSR_BITMAPS_READ_HIGH + offset] &= mask;          \
-		if (rw) {                                                          \
-			msr_bitmaps[VMCS_MSR_BITMAPS_WRITE_HIGH + offset] &= mask; \
-		}                                                                  \
+#define X_ALLOW_MSR(addr, rw)                                                       \
+	if (addr < VMCS_MSR_BITMAPS_HIGH_BASE) {                                    \
+		size_t offset = VMCS_MSR_BITMAPS_LOW_OFFSET(addr);                  \
+		uint8_t mask = (uint8_t) ~(1 << VMCS_MSR_BITMAPS_LOW_SHIFT(addr));  \
+		msr_bitmaps[VMCS_MSR_BITMAPS_READ_LOW + offset] &= mask;            \
+		if (rw) {                                                           \
+			msr_bitmaps[VMCS_MSR_BITMAPS_WRITE_LOW + offset] &= mask;   \
+		}                                                                   \
+	} else {                                                                    \
+		size_t offset = VMCS_MSR_BITMAPS_HIGH_OFFSET(addr);                 \
+		uint8_t mask = (uint8_t) ~(1 << VMCS_MSR_BITMAPS_HIGH_SHIFT(addr)); \
+		msr_bitmaps[VMCS_MSR_BITMAPS_READ_HIGH + offset] &= mask;           \
+		if (rw) {                                                           \
+			msr_bitmaps[VMCS_MSR_BITMAPS_WRITE_HIGH + offset] &= mask;  \
+		}                                                                   \
 	}
 
 #define X_VMCS(addr, name, vmcs) X_ALLOW_MSR(addr, 1)
