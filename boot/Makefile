@@ -25,6 +25,11 @@ OBJS:=$(OBJS_C) $(OBJS_A)
 OUT_DIR:=hda/EFI/BOOT
 OUT_EXEC:=$(OUT_DIR)/BOOTX64.EFI
 
+DISK_FOLDER:=hda/
+DISK_DEPS:=$(OUT_EXEC) hda/rkhv/*
+DISK_IMG:=hda.img
+DISK_VDI:=hda.vdi
+
 .PHONY: all
 all: $(OUT_EXEC)
 
@@ -42,6 +47,17 @@ $(OBJS_A): $(OBJ_DIR)/%_asm.o: %.asm
 
 -include $(OBJS:%.o=%.d)
 
+$(DISK_IMG): $(DISK_FOLDER) $(DISK_DEPS)
+	dd if=/dev/zero bs=1024 count=16384 of=$@ status=none
+	mformat -i $@ -v rkhv ::.
+	mcopy -i $@ -s $</* ::.
+
+# UUID v5 generated using the following parameters :
+# $ python3 -c 'import uuid ; print(uuid.uuid5(uuid.UUID(bytes=b"\x00"*16), "rkhv"))'
+$(DISK_VDI): $(DISK_IMG)
+	-rm $@
+	VBoxManage convertfromraw --uuid="d67954b2-3a7e-589b-bdba-f7b7bcba1c60" $< $@
+
 .PHONY: clean
 clean:
-	-rm -rv $(OBJ_DIR) $(OUT_DIR)
+	-rm -rv $(OBJ_DIR) $(OUT_DIR) $(DISK_IMG) $(DISK_VDI)

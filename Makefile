@@ -9,6 +9,13 @@ all: $(SUB_DIRS)
 $(SUB_DIRS):
 	$(MAKE) -C $@
 
+.PHONY: img
+img: $(SUB_DIRS)
+	$(MAKE) -C boot hda.img
+.PHONY: vdi
+vdi: $(SUB_DIRS)
+	$(MAKE) -C boot hda.vdi
+
 OVMF_PATH?=$(shell ./scripts/select_qemu_firmware.sh)
 ifdef QEMU_GDB
 	QEMU_ARGS:=-S -s
