@@ -17,6 +17,7 @@ vdi: $(SUB_DIRS)
 	$(MAKE) -C boot hda.vdi
 
 OVMF_PATH?=$(shell ./scripts/select_qemu_firmware.sh)
+QEMU_RAM?=512M
 ifdef QEMU_GDB
 	QEMU_ARGS:=-S -s
 endif
@@ -26,7 +27,7 @@ run: $(SUB_DIRS)
 		-cpu host \
 		-drive file=fat:rw:boot/hda/,format=raw \
 		-drive file="$(OVMF_PATH)",if=pflash,format=raw,readonly=on \
-		-m 512M \
+		-m "$(QEMU_RAM)" \
 		-serial stdio \
 		$(QEMU_ARGS)
 
