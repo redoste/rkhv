@@ -36,6 +36,23 @@ run: $(SUB_DIRS)
 		-serial stdio \
 		$(QEMU_ARGS)
 
+.PHONY: run_tmux
+run_tmux: $(SUB_DIRS)
+	tmux new-window -n rkhv \
+		qemu-system-x86_64 -enable-kvm \
+			-cpu "$(QEMU_CPU)" \
+			-drive file=fat:rw:boot/hda/,format=raw \
+			-drive file="$(OVMF_PATH)",if=pflash,format=raw,readonly=on \
+			-m "$(QEMU_RAM)" \
+			-display none \
+			-monitor tcp:127.0.0.1:4321,server=on,wait=no \
+			-serial stdio \
+			-S -s \
+		\; split-window -h -l 50% \
+			'sleep 0.5 && socat $$(tty),raw,echo=0 tcp-connect:127.0.0.1:4321' \
+		\; split-window -v -l 50% \
+			'sleep 0.5 && gdb hv/obj/rkhv.elf -ex "target remote 127.0.0.1:1234"'
+
 .PHONY: clean
 clean:
 	for d in $(SUB_DIRS); do $(MAKE) -C $$d clean; done
